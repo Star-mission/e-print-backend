@@ -1,0 +1,54 @@
+# 开发环境配置
+# 使用方式：mvn spring-boot:run -Dspring-boot.run.profiles=dev
+
+spring:
+  application:
+    name: eprint-backend
+
+  # MySQL 数据源配置（Docker）
+  datasource:
+    url: jdbc:mysql://localhost:3306/E_Bench?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
+    username: eprint
+    password: eprint123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # JPA 配置
+  jpa:
+    hibernate:
+      ddl-auto: update  # 自动创建/更新表结构
+    show-sql: true      # 显示 SQL 语句
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true  # 格式化 SQL
+
+  # MongoDB 配置（Docker）
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/E_Bench_Logs
+      database: E_Bench_Logs
+
+  # 文件上传配置
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+      location: ${java.io.tmpdir}
+
+# 服务器配置
+server:
+  port: 3000
+
+# 日志配置
+logging:
+  level:
+    com.eprint: DEBUG
+    org.springframework.web: INFO
+    org.hibernate: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+# 文件上传目录
+file:
+  upload-dir: ./uploads

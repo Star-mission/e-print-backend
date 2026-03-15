@@ -1,0 +1,50 @@
+# Docker Compose 配置文件
+# 用于快速启动开发环境所需的数据库服务
+
+version: '3.8'
+
+services:
+  # MySQL 数据库服务
+  mysql:
+    image: mysql:8.0
+    container_name: eprint-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root123      # root 用户密码
+      MYSQL_DATABASE: E_Bench            # 自动创建数据库
+      MYSQL_USER: eprint                 # 应用用户
+      MYSQL_PASSWORD: eprint123          # 应用用户密码
+    ports:
+      - "3306:3306"                      # 映射到本地 3306 端口
+    volumes:
+      - mysql-data:/var/lib/mysql        # 数据持久化
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MongoDB 数据库服务
+  mongodb:
+    image: mongo:7.0
+    container_name: eprint-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: E_Bench_Logs  # 自动创建数据库
+    ports:
+      - "27017:27017"                       # 映射到本地 27017 端口
+    volumes:
+      - mongodb-data:/data/db               # 数据持久化
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# 数据卷定义（用于持久化数据）
+volumes:
+  mysql-data:
+    driver: local
+  mongodb-data:
+    driver: local

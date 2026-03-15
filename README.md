@@ -133,15 +133,55 @@ file:
   upload-dir: ./uploads
 ```
 
-## 运行项目
+## 快速启动 🚀
 
-### 前置要求
+### 方式一：使用 Docker（推荐）
+
+**前置要求：**
 - JDK 17+
 - Maven 3.6+
-- MySQL 8.0
-- MongoDB 6.0
+- Docker Desktop
 
-### 启动步骤
+**启动步骤：**
+
+1. 启动数据库（MySQL + MongoDB）：
+```bash
+docker-compose up -d
+```
+
+2. 等待数据库启动完成（约 10-20 秒）：
+```bash
+docker-compose ps
+```
+
+3. 运行应用：
+```bash
+mvn spring-boot:run
+```
+
+应用将在 `http://localhost:3000` 启动
+
+**停止服务：**
+```bash
+# 停止后端
+Ctrl + C
+
+# 停止数据库
+docker-compose down
+
+# 停止数据库并删除数据
+docker-compose down -v
+```
+
+### 方式二：使用本地数据库
+
+**前置要求：**
+- JDK 17+
+- Maven 3.6+
+- MySQL 8.0（本地安装）
+- MongoDB 6.0（本地安装）
+
+**启动步骤：**
 
 1. 确保 MySQL 和 MongoDB 服务已启动
 
@@ -150,9 +190,12 @@ file:
 CREATE DATABASE E_Bench CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-3. 编译项目：
-```bash
-mvn clean install
+3. 修改配置文件 `src/main/resources/application-dev.yml`：
+```yaml
+spring:
+  datasource:
+    username: root        # 修改为你的 MySQL 用户名
+    password: your_password  # 修改为你的 MySQL 密码
 ```
 
 4. 运行应用：
@@ -161,6 +204,63 @@ mvn spring-boot:run
 ```
 
 应用将在 `http://localhost:3000` 启动
+
+## 环境配置
+
+项目支持多环境配置：
+
+- **开发环境**（默认）：`application-dev.yml`
+  - 使用 Docker 数据库
+  - 显示 SQL 日志
+  - 自动创建/更新表结构
+
+- **生产环境**：`application-prod.yml`
+  - 使用环境变量配置
+  - 关闭 SQL 日志
+  - 只验证表结构，不自动修改
+
+**切换环境：**
+```bash
+# 开发环境（默认）
+mvn spring-boot:run
+
+# 生产环境
+mvn spring-boot:run -Dspring-boot.run.profiles=prod
+```
+
+## Docker 配置说明
+
+`docker-compose.yml` 包含：
+
+- **MySQL 8.0**
+  - 端口：3306
+  - 数据库：E_Bench
+  - 用户名：eprint
+  - 密码：eprint123
+  - 数据持久化：mysql-data 卷
+
+- **MongoDB 7.0**
+  - 端口：27017
+  - 数据库：E_Bench_Logs
+  - 数据持久化：mongodb-data 卷
+
+**常用命令：**
+```bash
+# 查看容器状态
+docker-compose ps
+
+# 查看日志
+docker-compose logs -f
+
+# 重启数据库
+docker-compose restart
+
+# 进入 MySQL 容器
+docker exec -it eprint-mysql mysql -u eprint -peprint123 E_Bench
+
+# 进入 MongoDB 容器
+docker exec -it eprint-mongodb mongosh E_Bench_Logs
+```
 
 ## 与原 Node.js 版本的对应关系
 
