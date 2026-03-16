@@ -397,79 +397,6 @@ file:
   upload-dir: ./uploads          # 上传目录
 ```
 
-## 快速启动 🚀
-
-### 方式一：使用 Docker（推荐）
-
-**前置要求：**
-- JDK 17+
-- Maven 3.6+
-- Docker Desktop
-
-**启动步骤：**
-
-1. 启动数据库（MySQL + MongoDB）：
-```bash
-docker-compose up -d
-```
-
-2. 等待数据库启动完成（约 10-20 秒）：
-```bash
-docker-compose ps
-```
-
-3. 运行应用：
-```bash
-mvn spring-boot:run
-```
-
-应用将在 `http://localhost:3000` 启动
-
-**停止服务：**
-```bash
-# 停止后端
-Ctrl + C
-
-# 停止数据库
-docker-compose down
-
-# 停止数据库并删除数据
-docker-compose down -v
-```
-
-### 方式二：使用本地数据库
-
-**前置要求：**
-- JDK 17+
-- Maven 3.6+
-- MySQL 8.0（本地安装）
-- MongoDB 6.0（本地安装）
-
-**启动步骤：**
-
-1. 确保 MySQL 和 MongoDB 服务已启动
-
-2. 创建数据库：
-```sql
-CREATE DATABASE E_Bench CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
-
-3. 修改配置文件 `src/main/resources/application-dev.yml`：
-```yaml
-spring:
-  datasource:
-    username: root        # 修改为你的 MySQL 用户名
-    password: your_password  # 修改为你的 MySQL 密码
-```
-
-4. 运行应用：
-```bash
-mvn spring-boot:run
-```
-
-应用将在 `http://localhost:3000` 启动
-
----
 
 ## 环境配置
 
@@ -495,19 +422,6 @@ mvn spring-boot:run -Dspring-boot.run.profiles=prod
 ```
 
 ---
-
-## 与原 Node.js 版本的对应关系
-
-| Node.js/TypeScript | Java Spring Boot |
-|-------------------|------------------|
-| Express.js | Spring MVC |
-| Prisma ORM | Spring Data JPA + MongoDB |
-| Zod 验证 | Bean Validation (@Valid) |
-| Multer | MultipartFile |
-| orderService.ts | OrderService.java |
-| workOrderService.ts | WorkOrderService.java |
-| orderDTO.ts | OrderDTO.java + OrderMapper.java |
-| debugLogger.ts | SLF4J + Logback |
 
 ## 状态枚举
 
