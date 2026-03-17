@@ -38,6 +38,10 @@ public class EngineeringOrder {
     private Integer chuYangShu;
     private Integer chaoBiLi;
 
+    // 新增字段 - 来自 Change.md
+    private Integer zhuangDingJianShu;  // 已装订件数
+    private String headMNF;  // 生产负责人
+
     @Column(length = 2000)
     private String beiZhu;
 

@@ -17,6 +17,8 @@ public class MaterialLine {
     @JoinColumn(name = "engineering_order_id", nullable = false)
     private EngineeringOrder engineeringOrder;
 
+    private Integer intermediaIndex;  // 在 intermedia 数组中的索引位置
+
     private String materialName;
     private String specification;
     private Integer quantity;
@@ -24,7 +26,12 @@ public class MaterialLine {
 
     private LocalDateTime kaiShiShiJian;
     private LocalDateTime jieShuShiJian;
-    private Integer dangQianJinDu;
+    private String dangQianJinDu;  // 改为 String 类型（从 Change.md）
+
+    // 新增字段 - 来自 Change.md
+    private Integer yiGouJianShu;  // 已采购件数
+    private String headPUR;  // 采购负责人
+    private String headOUT;  // 外发负责人
 
     @Column(length = 1000)
     private String notes;

@@ -23,7 +23,7 @@ public class WorkOrderController {
 
     @PostMapping(value = "/create", consumes = "multipart/form-data")
     public ResponseEntity<WorkOrderDTO> createWorkOrder(
-            @RequestParam("data") String jsonData,
+            @RequestParam("workOrderJson") String jsonData,
             @RequestParam(value = "files", required = false) List<MultipartFile> files) {
 
         try {
@@ -70,7 +70,7 @@ public class WorkOrderController {
     public ResponseEntity<WorkOrderDTO> updateStatus(@RequestBody Map<String, String> request) {
         try {
             String workUnique = request.get("work_unique");
-            String status = request.get("status");
+            String status = request.get("workorderstatus");
 
             WorkOrderDTO result = workOrderService.updateWorkOrderStatus(workUnique, status);
             return ResponseEntity.ok(result);
@@ -85,12 +85,127 @@ public class WorkOrderController {
         try {
             String workId = (String) request.get("work_id");
             Integer process = (Integer) request.get("process");
-            String note = (String) request.get("note");
+            String dangQianJinDu = (String) request.get("dangQianJinDu");
 
-            WorkOrderDTO result = workOrderService.updateWorkOrderProcess(workId, process, note);
+            WorkOrderDTO result = workOrderService.updateWorkOrderProcess(workId, process, dangQianJinDu);
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             log.error("Error updating work order process", e);
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
+     * 为工序分配采购负责人
+     * POST /api/workOrders/addHeadPur
+     */
+    @PostMapping("/addHeadPur")
+    public ResponseEntity<WorkOrderDTO> addHeadPur(@RequestBody Map<String, Object> request) {
+        try {
+            String workUnique = (String) request.get("work_unique");
+            Integer intermediaID = (Integer) request.get("intermediaID");
+            String headPUR = (String) request.get("head_PUR");
+
+            WorkOrderDTO result = workOrderService.addHeadPur(workUnique, intermediaID, headPUR);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("Error adding PUR head", e);
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
+     * 为工序分配外发负责人
+     * POST /api/workOrders/addHeadOut
+     */
+    @PostMapping("/addHeadOut")
+    public ResponseEntity<WorkOrderDTO> addHeadOut(@RequestBody Map<String, Object> request) {
+        try {
+            String workUnique = (String) request.get("work_unique");
+            Integer intermediaID = (Integer) request.get("intermediaID");
+            String headOUT = (String) request.get("head_OUT");
+
+            WorkOrderDTO result = workOrderService.addHeadOut(workUnique, intermediaID, headOUT);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("Error adding OUT head", e);
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
+     * 为工单分配生产装订负责人
+     * POST /api/workOrders/addHeadMnf
+     */
+    @PostMapping("/addHeadMnf")
+    public ResponseEntity<WorkOrderDTO> addHeadMnf(@RequestBody Map<String, Object> request) {
+        try {
+            String workUnique = (String) request.get("work_unique");
+            String headMNF = (String) request.get("head_MNF");
+
+            WorkOrderDTO result = workOrderService.addHeadMnf(workUnique, headMNF);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("Error adding MNF head", e);
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
+     * 更新采购进度
+     * POST /api/workOrders/updateProgressPur
+     */
+    @PostMapping("/updateProgressPur")
+    public ResponseEntity<WorkOrderDTO> updateProgressPur(@RequestBody Map<String, Object> request) {
+        try {
+            String workUnique = (String) request.get("work_unique");
+            Integer intermediaID = (Integer) request.get("intermediaID");
+            Integer yiGouJianShu = (Integer) request.get("yiGouJianShu");
+
+            WorkOrderDTO result = workOrderService.updateProgressPur(workUnique, intermediaID, yiGouJianShu);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("Error updating PUR progress", e);
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
+     * 更新外发进度
+     * POST /api/workOrders/updateProgressOut
+     */
+    @PostMapping("/updateProgressOut")
+    public ResponseEntity<WorkOrderDTO> updateProgressOut(@RequestBody Map<String, Object> request) {
+        try {
+            String workUnique = (String) request.get("work_unique");
+            Integer intermediaID = (Integer) request.get("intermediaID");
+            String kaiShiRiQi = (String) request.get("kaiShiRiQi");
+            String yuQiJieShu = (String) request.get("yuQiJieShu");
+            String dangQianJinDu = (String) request.get("dangQianJinDu");
+
+            WorkOrderDTO result = workOrderService.updateProgressOut(
+                    workUnique, intermediaID, kaiShiRiQi, yuQiJieShu, dangQianJinDu);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("Error updating OUT progress", e);
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
+     * 更新生产装订进度
+     * POST /api/workOrders/updateProgressMnf
+     */
+    @PostMapping("/updateProgressMnf")
+    public ResponseEntity<WorkOrderDTO> updateProgressMnf(@RequestBody Map<String, Object> request) {
+        try {
+            String workUnique = (String) request.get("work_unique");
+            Integer zhuangDingJianShu = (Integer) request.get("zhuangDingJianShu");
+
+            WorkOrderDTO result = workOrderService.updateProgressMnf(workUnique, zhuangDingJianShu);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("Error updating MNF progress", e);
             return ResponseEntity.badRequest().build();
         }
     }

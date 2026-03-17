@@ -20,6 +20,10 @@ public class WorkOrderDTO {
     private Integer chuYangShuLiang;
     private Integer chaoBiLiShuLiang;
 
+    // 新增字段 - 来自 Change.md
+    private Integer zhuangDingJianShu;  // 已装订件数
+    private String head_MNF;  // 生产负责人
+
     private String beiZhu;
 
     private List<IntermediaMaterialDTO> intermedia;

@@ -77,7 +77,7 @@ public class OrderController {
      */
     @PostMapping(value = {"/", "/create"}, consumes = "multipart/form-data")
     public ResponseEntity<OrderDTO> createOrder(
-            @RequestParam("data") String jsonData,
+            @RequestParam("orderData") String jsonData,
             @RequestParam(value = "isDraft", defaultValue = "false") boolean isDraft,
             @RequestParam(value = "files", required = false) List<MultipartFile> files) {
 
@@ -202,7 +202,7 @@ public class OrderController {
     public ResponseEntity<OrderDTO> updateStatus(@RequestBody Map<String, String> request) {
         try {
             String orderUnique = request.get("order_unique");
-            String status = request.get("status");
+            String status = request.get("orderstatus");
             String auditor = request.get("auditor");
 
             OrderDTO result = orderService.updateOrderStatus(orderUnique, status, auditor);

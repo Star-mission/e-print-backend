@@ -194,6 +194,193 @@ public class WorkOrderService {
         return workOrderMapper.toDTO(savedWorkOrder, getAuditLogs(savedWorkOrder.getEngineeringOrderId()));
     }
 
+    /**
+     * 为工序分配采购负责人
+     */
+    @Transactional
+    public WorkOrderDTO addHeadPur(String workUnique, Integer intermediaID, String headPUR) {
+        log.info("Adding PUR head to work order: {} intermedia: {}", workUnique, intermediaID);
+
+        EngineeringOrder workOrder = engineeringOrderRepository.findByWorkUnique(workUnique)
+                .orElseThrow(() -> new RuntimeException("Work order not found: " + workUnique));
+
+        List<MaterialLine> materialLines = workOrder.getMaterialLines();
+        if (intermediaID >= 0 && intermediaID < materialLines.size()) {
+            MaterialLine materialLine = materialLines.get(intermediaID);
+            materialLine.setHeadPUR(headPUR);
+        } else {
+            throw new RuntimeException("Invalid intermedia index: " + intermediaID);
+        }
+
+        EngineeringOrder savedWorkOrder = engineeringOrderRepository.save(workOrder);
+
+        createAuditLog(
+                "ADD_HEAD_PUR",
+                "分配采购负责人",
+                "EngineeringOrder",
+                savedWorkOrder.getEngineeringOrderId(),
+                null,
+                headPUR
+        );
+
+        return workOrderMapper.toDTO(savedWorkOrder, getAuditLogs(savedWorkOrder.getEngineeringOrderId()));
+    }
+
+    /**
+     * 为工序分配外发负责人
+     */
+    @Transactional
+    public WorkOrderDTO addHeadOut(String workUnique, Integer intermediaID, String headOUT) {
+        log.info("Adding OUT head to work order: {} intermedia: {}", workUnique, intermediaID);
+
+        EngineeringOrder workOrder = engineeringOrderRepository.findByWorkUnique(workUnique)
+                .orElseThrow(() -> new RuntimeException("Work order not found: " + workUnique));
+
+        List<MaterialLine> materialLines = workOrder.getMaterialLines();
+        if (intermediaID >= 0 && intermediaID < materialLines.size()) {
+            MaterialLine materialLine = materialLines.get(intermediaID);
+            materialLine.setHeadOUT(headOUT);
+        } else {
+            throw new RuntimeException("Invalid intermedia index: " + intermediaID);
+        }
+
+        EngineeringOrder savedWorkOrder = engineeringOrderRepository.save(workOrder);
+
+        createAuditLog(
+                "ADD_HEAD_OUT",
+                "分配外发负责人",
+                "EngineeringOrder",
+                savedWorkOrder.getEngineeringOrderId(),
+                null,
+                headOUT
+        );
+
+        return workOrderMapper.toDTO(savedWorkOrder, getAuditLogs(savedWorkOrder.getEngineeringOrderId()));
+    }
+
+    /**
+     * 为工单分配生产装订负责人
+     */
+    @Transactional
+    public WorkOrderDTO addHeadMnf(String workUnique, String headMNF) {
+        log.info("Adding MNF head to work order: {}", workUnique);
+
+        EngineeringOrder workOrder = engineeringOrderRepository.findByWorkUnique(workUnique)
+                .orElseThrow(() -> new RuntimeException("Work order not found: " + workUnique));
+
+        workOrder.setHeadMNF(headMNF);
+
+        EngineeringOrder savedWorkOrder = engineeringOrderRepository.save(workOrder);
+
+        createAuditLog(
+                "ADD_HEAD_MNF",
+                "分配生产负责人",
+                "EngineeringOrder",
+                savedWorkOrder.getEngineeringOrderId(),
+                null,
+                headMNF
+        );
+
+        return workOrderMapper.toDTO(savedWorkOrder, getAuditLogs(savedWorkOrder.getEngineeringOrderId()));
+    }
+
+    /**
+     * 更新采购进度
+     */
+    @Transactional
+    public WorkOrderDTO updateProgressPur(String workUnique, Integer intermediaID, Integer yiGouJianShu) {
+        log.info("Updating PUR progress for work order: {} intermedia: {}", workUnique, intermediaID);
+
+        EngineeringOrder workOrder = engineeringOrderRepository.findByWorkUnique(workUnique)
+                .orElseThrow(() -> new RuntimeException("Work order not found: " + workUnique));
+
+        List<MaterialLine> materialLines = workOrder.getMaterialLines();
+        if (intermediaID >= 0 && intermediaID < materialLines.size()) {
+            MaterialLine materialLine = materialLines.get(intermediaID);
+            materialLine.setYiGouJianShu(yiGouJianShu);
+        } else {
+            throw new RuntimeException("Invalid intermedia index: " + intermediaID);
+        }
+
+        EngineeringOrder savedWorkOrder = engineeringOrderRepository.save(workOrder);
+
+        createAuditLog(
+                "UPDATE_PROGRESS_PUR",
+                "更新采购进度",
+                "EngineeringOrder",
+                savedWorkOrder.getEngineeringOrderId(),
+                null,
+                yiGouJianShu.toString()
+        );
+
+        return workOrderMapper.toDTO(savedWorkOrder, getAuditLogs(savedWorkOrder.getEngineeringOrderId()));
+    }
+
+    /**
+     * 更新外发进度
+     */
+    @Transactional
+    public WorkOrderDTO updateProgressOut(String workUnique, Integer intermediaID,
+                                         String kaiShiRiQi, String yuQiJieShu, String dangQianJinDu) {
+        log.info("Updating OUT progress for work order: {} intermedia: {}", workUnique, intermediaID);
+
+        EngineeringOrder workOrder = engineeringOrderRepository.findByWorkUnique(workUnique)
+                .orElseThrow(() -> new RuntimeException("Work order not found: " + workUnique));
+
+        List<MaterialLine> materialLines = workOrder.getMaterialLines();
+        if (intermediaID >= 0 && intermediaID < materialLines.size()) {
+            MaterialLine materialLine = materialLines.get(intermediaID);
+            if (kaiShiRiQi != null) {
+                materialLine.setKaiShiShiJian(LocalDateTime.parse(kaiShiRiQi));
+            }
+            if (yuQiJieShu != null) {
+                materialLine.setJieShuShiJian(LocalDateTime.parse(yuQiJieShu));
+            }
+            materialLine.setDangQianJinDu(dangQianJinDu);
+        } else {
+            throw new RuntimeException("Invalid intermedia index: " + intermediaID);
+        }
+
+        EngineeringOrder savedWorkOrder = engineeringOrderRepository.save(workOrder);
+
+        createAuditLog(
+                "UPDATE_PROGRESS_OUT",
+                "更新外发进度",
+                "EngineeringOrder",
+                savedWorkOrder.getEngineeringOrderId(),
+                null,
+                dangQianJinDu
+        );
+
+        return workOrderMapper.toDTO(savedWorkOrder, getAuditLogs(savedWorkOrder.getEngineeringOrderId()));
+    }
+
+    /**
+     * 更新生产装订进度
+     */
+    @Transactional
+    public WorkOrderDTO updateProgressMnf(String workUnique, Integer zhuangDingJianShu) {
+        log.info("Updating MNF progress for work order: {}", workUnique);
+
+        EngineeringOrder workOrder = engineeringOrderRepository.findByWorkUnique(workUnique)
+                .orElseThrow(() -> new RuntimeException("Work order not found: " + workUnique));
+
+        workOrder.setZhuangDingJianShu(zhuangDingJianShu);
+
+        EngineeringOrder savedWorkOrder = engineeringOrderRepository.save(workOrder);
+
+        createAuditLog(
+                "UPDATE_PROGRESS_MNF",
+                "更新生产装订进度",
+                "EngineeringOrder",
+                savedWorkOrder.getEngineeringOrderId(),
+                null,
+                zhuangDingJianShu.toString()
+        );
+
+        return workOrderMapper.toDTO(savedWorkOrder, getAuditLogs(savedWorkOrder.getEngineeringOrderId()));
+    }
+
     private String generateWorkOrderId() {
         return "WORK-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0, 8);
     }
