@@ -174,7 +174,7 @@ public class WorkOrderService {
 
         if (!workOrder.getMaterialLines().isEmpty()) {
             MaterialLine firstLine = workOrder.getMaterialLines().get(0);
-            firstLine.setDangQianJinDu(process);
+            firstLine.setDangQianJinDu(process != null ? process.toString() : null);
             if (note != null) {
                 firstLine.setNotes(note);
             }
