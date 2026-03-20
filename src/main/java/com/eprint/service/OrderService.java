@@ -4,10 +4,10 @@ import com.eprint.dto.OrderDTO;
 import com.eprint.entity.Order;
 import com.eprint.entity.OrderItem;
 import com.eprint.entity.Document;
-import com.eprint.entity.mongo.AuditLog;
+import com.eprint.entity.AuditLog;
 import com.eprint.mapper.OrderMapper;
 import com.eprint.repository.mysql.OrderRepository;
-import com.eprint.repository.mongo.AuditLogRepository;
+import com.eprint.repository.mysql.AuditLogRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -50,7 +51,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
 
     /**
-     * 审计日志数据访问层（MongoDB）
+     * 审计日志数据访问层（MySQL）
      */
     private final AuditLogRepository auditLogRepository;
 
@@ -388,7 +389,6 @@ public class OrderService {
         auditLog.setNewValue(newValue);
         auditLog.setTime(LocalDateTime.now());
 
-        // 保存到 MongoDB
         auditLogRepository.save(auditLog);
     }
 }

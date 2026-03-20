@@ -7,7 +7,7 @@ import com.eprint.dto.AuditLogDTO;
 import com.eprint.entity.EngineeringOrder;
 import com.eprint.entity.MaterialLine;
 import com.eprint.entity.Document;
-import com.eprint.entity.mongo.AuditLog;
+import com.eprint.entity.AuditLog;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

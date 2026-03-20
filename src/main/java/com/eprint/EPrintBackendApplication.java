@@ -3,7 +3,6 @@ package com.eprint;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 /**
  * E-Print 后端服务 - Spring Boot 应用主入口
@@ -27,7 +26,6 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
  */
 @SpringBootApplication  // Spring Boot 主注解，启用自动配置
 @EnableJpaRepositories(basePackages = "com.eprint.repository.mysql")  // 启用 JPA 仓库，指定 MySQL 仓库包路径
-@EnableMongoRepositories(basePackages = "com.eprint.repository.mongo")  // 启用 MongoDB 仓库，指定 MongoDB 仓库包路径
 public class EPrintBackendApplication {
 
     /**
