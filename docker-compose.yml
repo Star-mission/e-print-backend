@@ -25,26 +25,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # MongoDB 数据库服务
-  mongodb:
-    image: mongo:7.0
-    container_name: eprint-mongodb
-    restart: unless-stopped
-    environment:
-      MONGO_INITDB_DATABASE: E_Bench_Logs  # 自动创建数据库
-    ports:
-      - "27017:27017"                       # 映射到本地 27017 端口
-    volumes:
-      - mongodb-data:/data/db               # 数据持久化
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
 # 数据卷定义（用于持久化数据）
 volumes:
   mysql-data:
-    driver: local
-  mongodb-data:
     driver: local

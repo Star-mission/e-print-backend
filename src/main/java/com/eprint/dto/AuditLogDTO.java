@@ -1,15 +1,14 @@
 package com.eprint.dto;
 
 import lombok.Data;
-import java.time.LocalDateTime;
 
 @Data
 public class AuditLogDTO {
 
     private String action;
-    private String actionDescription;
-    private String userId;
+    private String comment;       // 前端字段名（对应后端 actionDescription）
+    private String operator;      // 前端字段名（对应后端 userId）
     private String oldValue;
     private String newValue;
-    private LocalDateTime time;
+    private String time;          // 前端为 string 类型
 }

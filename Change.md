@@ -1,142 +1,92 @@
-WorkOrder 工程单的核心数据修改如下：
+# 后端功能清单
 
-import { reactive } from 'vue'
-import { type IWorkOrder, OrderStatus, formatYMD } from '@/types/workorder'
+> 标注说明：✅ 已完成 | ⚠️ 部分完成 | ❌ 未实现
 
-/**
- * 创建一个全字段初始化的 IWorkOrder 对象
- * 包含完整的嵌套数组对象：intermedia, auditLogs, attachments
- * 注释格式：<变量类型> + <原注释>
- */
-const createFullWorkOrderTemplate = (): IWorkOrder => {
-  return {
-    // ======== 基础信息 ========
-    work_id: 'ORD-20260201-001_W',                // string: 工程单号，在order通过审核时自动创建，order_id+"_W"
-    work_ver: 'V1',                         // string: 版本号，和order_ver相同
-    work_unique:'ORD-20260201-001_W_V1'//string:后端唯一索引，在order通过审核时自动创建,是work_id+"_"+work_ver.
-    work_clerk: 'CZ001-王小美',              // string: 制单员名称或者工号
-    work_audit: 'SH005-张经理',              // string: 工程单审核员名称或者工号
-    gongDanLeiXing: '翻单',                  // string: 工单类型
-    caiLiao: '250g哑粉纸',                  // string: 普通材料
-    chanPinLeiXing: '精品礼盒',               // string: 产品类型
-    zhiDanShiJian: '2026-02-01 10:30:00',   // string: 制单时间
-    customer: '环球贸易有限公司',             // string: 客户
-    customerPO: 'PO-HK-9921',               // string: 客户PO
-    productName: '奢华巧克力包装盒',           // string: 成品名称
-    chanPinGuiGe: '300 * 200 * 50 mm',      // string: 产品规格：似乎是页面大小
+---
 
-    // ======== 订单过继信息 ========
-    dingDanShuLiang: 10000,                 // number: 订单数量
-    chuYangShuLiang: 10,                    // number: 出样数量
-    chaoBiLiShuLiang: 100,                  // number: 超比例数量
-    benChangFangSun: '2.0%',                // string: 本厂放损
-    chuYangRiqiRequired: '2026-02-10',      // string: 出样日期要求
-    chuHuoRiqiRequired: '2026-03-15',       // string: 出货日期要求
-    workorderstatus: WorkOrderStatus.PENDING_REVIEW,// OrderStatus: 订单状态
-    zhuangDingJianShu: '26',//number: 已经装订件数，zhuangDingJianShu/dingDanShuLiang=装订进度
-    head_MNF: 'Alice',//string: 该工单的生产负责人
-    // ======== 中间物料详单 (IIM[]) ========
-    intermedia: [
-      {
-        buJianMingCheng: '盒身',             // string: 部件名称
-        yinShuaYanSe: '5C+1C',              // string: 印刷颜色
-        wuLiaoMingCheng: '157g铜版纸裱2.0灰板', // string: 物料名称
-        pinPai: '万国',                     // string: 品牌
-        caiLiaoGuiGe: '787 * 1092',         // string: 材料规格
-        FSC: 'FSC Mix',                     // string: FSC
-        kaiShu: 4,                          // number: 开数
-        shangJiChiCun: '540 * 390',         // string: 上机尺寸
-        paiBanMuShu: 1,                     // number: 排版模数
-        yinChuShu: 10200,                   // number: 印出数
-        yinSun: 300,                        // number: 印损
-        lingLiaoShu: 10500,                 // number: 领料数（张）
-        biaoMianChuLi: '触感膜+局部UV',        // string: 表面处理
-        yinShuaBanShu: 6,                   // number: 印刷版数目
-        shengChanLuJing: '印刷-覆膜-V槽-糊盒',  // string: 生产路径
-        paiBanFangShi: '自翻'                // string: 排版方式
-        
-        //不在工程单申请上的，但是后期会渲染进度
-        yiGouJianShu: '25' //number：已经采购的件数，caiGouJianShu/lingLiaoShu=采购进度
-        head_PUR:'Marc'//string: 该工序的采购负责人 
-        kaiShiRiQi: '2026-02-01' //string：工序开始日期
-        yuQiJieShu: '2026-03-01'// string：工序预期结束日期
-        dangQianJinDu: '85%' //string: 工序当前进度，由技工手动输入
-        head_OUT: '张三' //string：该工序的外发负责人
-      }
-    ],
+## 一、订单管理（/api/orders）
 
+| 状态 | 功能 | 接口 | 说明 |
+|------|------|------|------|
+| ✅ | 创建/更新订单 | POST /api/orders/create | 支持草稿(isDraft=true)和提交，支持文件上传，orderData 为 JSON 字符串 |
+| ✅ | 查询所有订单 | GET /api/orders/all | 返回所有订单列表 |
+| ✅ | 按业务员查询 | GET /api/orders/findBySales?sales= | 返回该业务员的所有订单 |
+| ✅ | 按审核员查询 | GET /api/orders/findByAudit?audit= | 返回该审核员相关的所有订单 |
+| ✅ | 按唯一索引查询 | GET /api/orders/findById?order_id= | 返回完整订单（含明细、附件、审计日志）|
+| ✅ | 按状态查询 | GET /api/orders/status?orderstatus= | 支持：草稿/待审核/通过/驳回/生产中/完成/取消 |
+| ✅ | 更新订单状态 | POST /api/orders/updateStatus | 参数：order_unique, orderstatus, auditor |
+| ✅ | 删除订单 | DELETE /api/orders/{id} | 级联删除明细和附件 |
+| ✅ | 健康检查 | GET /api/orders/health | 返回服务状态 |
+| ❌ | 查询待审核订单（专用） | GET /api/orders/pending | need.md 标注为未实现，目前可用 /status?orderstatus=待审核 代替 |
 
-    // ======== 审批日志 (IAuditLog[]) ========
-    auditLogs: [
-      {
-        time: '2026-02-01 09:00:00',        // string: 记录时间
-        operator: 'CZ001-王小美',            // string: 业务员或者审核人，后期以工号替代
-        action: 'save_draft',               // string: 操作动作
-        comment: '保存草稿，等待附件上传'       // string: 备注
-      },
-      {
-        time: '2026-02-01 10:00:00',
-        operator: 'SH005-张经理',
-        action: 'reject',
-        comment: '放损比例填写过低，请核实后重交' // 模拟驳回备注
-      }
-    ],
+---
 
-    // ======== 附件条目 (IAttachment[]) ========
-    attachments: [
-      {
-        category: '设计稿',                  // string: 附件分类
-        fileName: 'chocolate_box_final.ai', // string: 文件名
-        url: 'http://cdn.eprint.com/files/ai/123.ai' // string: 可选：用于查看阶段的服务器下载链接
-      }
-      // 注意：file 对象通常在上传阶段由 input 赋值，初始化时一般为 undefined
-    ]
-  }
-}
-export enum WorkOrderStatus {
-  DRAFT = '草稿',
-  PENDING_REVIEW = '待审核',
-  APPROVED = '通过',
-  REJECTED = '驳回',
-  IN_PRODUCTION = '生产中',
-  COMPLETED = '完成',
-  CANCELLED = '取消',
-}
-// 在 Vue 中创建该全量响应式对象
-const workOrder = reactive<IWorkOrder>(createFullWorkOrderTemplate())
+## 二、工程单管理（/api/workOrders）
 
-IUser修改如下：
-export interface IUser {
-  // ======== 基础账号信息 ========
-  userId: admin // string: 用户唯一标识符 (UUID或工号)
-  username: admin // string: 登录账号名
-  email: admin@admin.com // string: 电子邮箱
-  passwordHash: admin // string: 加密后的密码哈希值 (前端不存储明文)
-  fullName: admin // string: 用户真实姓名
-  isActive: True // boolean: 账号是否启用
+| 状态 | 功能 | 接口 | 说明 |
+|------|------|------|------|
+| ✅ | 创建/更新工程单 | POST /api/workOrders/create | workOrderJson 为 JSON 字符串，支持文件上传 |
+| ✅ | 按唯一索引查询 | GET /api/workOrders/findById?work_unique= | 返回完整工程单（含物料行、附件、审计日志）|
+| ✅ | 按制单员查询 | GET /api/workOrders/findByClerk?work_clerk= | 返回该制单员的所有工程单 |
+| ✅ | 按审核员查询 | GET /api/workOrders/findByAudit?work_audit= | 返回该审核员相关的所有工程单 |
+| ✅ | 按状态查询 | GET /api/workOrders/findWithStatus?workorderstatus= | 支持：草稿/待审核/通过/驳回/生产中/完成/取消 |
+| ✅ | 更新工程单状态 | POST /api/workOrders/updateStatus | 参数：work_unique, workorderstatus |
+| ✅ | 更新工序进度（旧） | POST /api/workOrders/updateProcess | 参数：work_id, process, note（更新第一条物料行）|
 
-  // ======== 提交与审核权限 (流程控制) ========
-  order_submit: True // boolean: 订单提交权限 (业务员)
-  order_audit: True // boolean: 订单审核权限 (审单员/主管)
-  work_submit: True // boolean: 工程单提交权限 (制单员)
-  work_audit: True // boolean: 工程单审核权限 (工程主管)
+### 2.1 负责人分配
 
-  // ======== 查看和修改权限 (模块准入) ========
-  order_check: True // boolean: 订单查看权限
-  work_check: True // boolean: 工程单查看权限
-  pmc_check: True // boolean: PMC(生产排期)查看权限
-  pmc_edit: True // boolean: PMC(生产排期)修改权限
+| 状态 | 功能 | 接口 | 说明 |
+|------|------|------|------|
+| ✅ | 分配采购负责人 | POST /api/workOrders/addHeadPur | 参数：work_unique, intermediaID, head_PUR |
+| ✅ | 分配外发负责人 | POST /api/workOrders/addHeadOut | 参数：work_unique, intermediaID, head_OUT |
+| ✅ | 分配生产负责人 | POST /api/workOrders/addHeadMnf | 参数：work_unique, head_MNF |
 
-  // ======== 查看和修改发货 (物流权限) ========
-  delieve_check: True // boolean: 发货/出库记录查看权限
-  delieve_edit: True // boolean: 发货/出库单据编辑权限
-  
-  isSAL: True //boolean: 是否能查看销售部页面
-  isPUR: True //boolean: 是否能查看采购部页面
-  isOUT: True //boolean: 是否能查看外发部页面
-  isMNF: True //boolean: 是否能查看生产部页面
-  isADM: True //boolean: 是否能查看办公室页面
+### 2.2 进度更新
 
-  // ======== 系统辅助字段 ========
-  lastLogin?: 2026-02-01 // string: 最后登录时间 (yyyy-mm-dd HH:mm:ss)
-}
+| 状态 | 功能 | 接口 | 说明 |
+|------|------|------|------|
+| ✅ | 更新采购进度 | POST /api/workOrders/updateProgressPur | 参数：work_unique, intermediaID, yiGouJianShu（已采购件数）|
+| ✅ | 更新外发进度 | POST /api/workOrders/updateProgressOut | 参数：work_unique, intermediaID, kaiShiRiQi, yuQiJieShu, dangQianJinDu |
+| ✅ | 更新生产装订进度 | POST /api/workOrders/updateProgressMnf | 参数：work_unique, zhuangDingJianShu（已装订件数）|
+
+---
+
+## 三、用户管理（/api/users）
+
+| 状态 | 功能 | 接口 | 说明 |
+|------|------|------|------|
+| ✅ | 创建用户 | POST /api/users/create | 包含完整权限字段，需传 passwordHash |
+| ✅ | 按用户名查询 | GET /api/users/findByUsername?username= | 返回用户信息（不含密码哈希）|
+| ✅ | 按用户ID查询 | GET /api/users/findByUserId?userId= | 返回用户信息（不含密码哈希）|
+| ✅ | 查询所有用户 | GET /api/users/all | 返回所有用户列表 |
+| ✅ | 更新用户信息 | POST /api/users/update | 可更新基础信息和所有权限字段 |
+| ✅ | 删除用户 | DELETE /api/users/{userId} | 按 userId 删除 |
+| ✅ | 更新最后登录时间 | POST /api/users/updateLastLogin | 参数：userId |
+| ❌ | 用户登录认证 | POST /api/users/login | 未实现，暂无 JWT/Session 认证机制 |
+| ❌ | 修改密码 | POST /api/users/changePassword | 未实现 |
+
+---
+
+## 四、数据库结构
+
+| 状态 | 表名 | 说明 |
+|------|------|------|
+| ✅ | orders | 订单主表 |
+| ✅ | order_items | 订单明细表 |
+| ✅ | engineering_orders | 工程单主表（含 zhuangDingJianShu, headMNF）|
+| ✅ | engineering_order_material_lines | 工序物料表（含 yiGouJianShu, headPUR, headOUT, intermediaIndex）|
+| ✅ | documents | 附件文档表 |
+| ✅ | users | 用户权限表 |
+| ✅ | audit_logs | 审计日志表（已从 MongoDB 迁移至 MySQL）|
+
+---
+
+## 五、待办 / 已知问题
+
+| 优先级 | 问题 | 说明 |
+|--------|------|------|
+| 高 | 用户登录认证未实现 | 当前所有接口无鉴权，需实现 JWT 或 Session 认证 |
+| 高 | need.md 中三个进度更新函数有 JS 语法 bug | UpdateProgress_Pur/Out/Mnf 使用了逗号运算符而非函数第二参数，导致请求体为空，需在前端修复 |
+| 中 | /api/orders/pending 接口未实现 | 可用 /status?orderstatus=待审核 代替，或单独实现 |
+| 中 | Order 实体字段与前端 IOrder 存在差异 | 前端定义了大量字段（如 cpcQueRen, waixiaoFlag 等），后端 Order 实体未完全对应 |
+| 低 | 旧的 mongo 包仍存在 | src/main/java/com/eprint/repository/mongo/ 目录已空，可清理 |

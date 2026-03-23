@@ -23,7 +23,7 @@ public class WorkOrderController {
 
     @PostMapping(value = "/create", consumes = "multipart/form-data")
     public ResponseEntity<WorkOrderDTO> createWorkOrder(
-            @RequestParam("workOrderJson") String jsonData,
+            @RequestParam("workOrderData") String jsonData,
             @RequestParam(value = "files", required = false) List<MultipartFile> files) {
 
         try {
@@ -61,7 +61,7 @@ public class WorkOrderController {
     }
 
     @GetMapping("/findWithStatus")
-    public ResponseEntity<List<WorkOrderDTO>> findByStatus(@RequestParam("workorderstatus") String status) {
+    public ResponseEntity<List<WorkOrderDTO>> findByStatus(@RequestParam("orderstatus") String status) {
         List<WorkOrderDTO> workOrders = workOrderService.getWorkOrdersByStatus(status);
         return ResponseEntity.ok(workOrders);
     }

@@ -8,19 +8,42 @@ import java.util.List;
 public class OrderDTO {
 
     private String order_id;
-    private Integer order_ver;
+    private String order_ver;  // 前端为 string 类型（如 "V1"）
     private String order_unique;
     private String orderstatus;
     private String sales;
+    private String salesDate;
     private String audit;
+    private String auditDate;
     private String customer;
     private String productName;
     private String customerPO;
     private String isbn;
+    private String baoJiaDanHao;
+    private String xiLieDanMing;
+    private String chanPinDaLei;
+    private String ziLeiXing;
+    private String fscType;
+    private String fenBanShuoMing;
+    private String baoLiuQianSe;
+    private Boolean cpcQueRen;
+    private Boolean waixiaoFlag;
+    private Boolean cpsiaYaoqiu;
+    private String dingZhiBeiZhu;
+    private String zhuangDingFangShi;
+    private String genSeZhiShi;
+    private String yongTu;
+    private String chanPinMingXiTeBieShuoMing;
 
     private Integer dingDanShuLiang;
     private Integer chuYangShuLiang;
     private Integer chaoBiLiShuLiang;
+    private Integer teShuLiuYangZhang;
+    private Integer beiPinShuLiang;
+    private Integer teShuLiuShuYang;
+    private Integer zongShuLiang;
+    private Integer chuYangShuoMing;
+    private Integer chuHuoShuLiang;
 
     private Double guigeGaoMm;
     private Double guigeKuanMm;
@@ -30,14 +53,19 @@ public class OrderDTO {
     private String wuLiaoShuoMing;
     private String zhiLiangYaoQiu;
     private String beiZhu;
-    private String keLaiXinXi;
+    private String keLaiXinxi;  // 前端字段名为小写 xi
 
-    private LocalDateTime xiaZiliaodaiRiqi1;
-    private LocalDateTime xiaZiliaodaiRiqi2;
-    private LocalDateTime yinzhangRiqi1;
-    private LocalDateTime yinzhangRiqi2;
-    private LocalDateTime jiaoHuoRiQi1;
-    private LocalDateTime jiaoHuoRiQi2;
+    // 排期信息（与前端字段名对齐）
+    private String xiaZiliaodaiRiqiRequired;
+    private String xiaZiliaodaiRiqiPromise;
+    private String yinzhangRiqiRequired;
+    private String yinzhangRiqiPromise;
+    private String zhepaiRiqiRequired;
+    private String zhepaiRiqiPromise;
+    private String chuyangRiqiRequired;
+    private String chuyangRiqiPromise;
+    private String chuHuoRiqiRequired;
+    private String chuHuoRiqiPromise;
 
     private String yeWuDaiBiaoFenJi;
     private String shenHeRen;

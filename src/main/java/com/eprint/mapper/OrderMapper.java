@@ -20,7 +20,7 @@ public class OrderMapper {
         OrderDTO dto = new OrderDTO();
 
         dto.setOrder_id(order.getOrderNumber());
-        dto.setOrder_ver(order.getOrderVer());
+        dto.setOrder_ver(order.getOrderVer() != null ? order.getOrderVer().toString() : null);
         dto.setOrder_unique(order.getOrderUnique());
         dto.setOrderstatus(order.getStatus() != null ? order.getStatus().name() : null);
         dto.setSales(order.getSales());
@@ -42,14 +42,15 @@ public class OrderMapper {
         dto.setWuLiaoShuoMing(order.getWuLiaoShuoMing());
         dto.setZhiLiangYaoQiu(order.getZhiLiangYaoQiu());
         dto.setBeiZhu(order.getBeiZhu());
-        dto.setKeLaiXinXi(order.getKeLaiXinXi());
+        dto.setKeLaiXinxi(order.getKeLaiXinXi());
 
-        dto.setXiaZiliaodaiRiqi1(order.getXiaZiliaodaiRiqi1());
-        dto.setXiaZiliaodaiRiqi2(order.getXiaZiliaodaiRiqi2());
-        dto.setYinzhangRiqi1(order.getYinzhangRiqi1());
-        dto.setYinzhangRiqi2(order.getYinzhangRiqi2());
-        dto.setJiaoHuoRiQi1(order.getJiaoHuoRiQi1());
-        dto.setJiaoHuoRiQi2(order.getJiaoHuoRiQi2());
+        // 日期字段映射（实体1/2 → DTO Required/Promise）
+        dto.setXiaZiliaodaiRiqiRequired(order.getXiaZiliaodaiRiqi1() != null ? order.getXiaZiliaodaiRiqi1().toString() : null);
+        dto.setXiaZiliaodaiRiqiPromise(order.getXiaZiliaodaiRiqi2() != null ? order.getXiaZiliaodaiRiqi2().toString() : null);
+        dto.setYinzhangRiqiRequired(order.getYinzhangRiqi1() != null ? order.getYinzhangRiqi1().toString() : null);
+        dto.setYinzhangRiqiPromise(order.getYinzhangRiqi2() != null ? order.getYinzhangRiqi2().toString() : null);
+        dto.setChuHuoRiqiRequired(order.getJiaoHuoRiQi1() != null ? order.getJiaoHuoRiQi1().toString() : null);
+        dto.setChuHuoRiqiPromise(order.getJiaoHuoRiQi2() != null ? order.getJiaoHuoRiQi2().toString() : null);
 
         dto.setYeWuDaiBiaoFenJi(order.getYeWuDaiBiaoFenJi());
         dto.setShenHeRen(order.getShenHeRen());
@@ -77,7 +78,7 @@ public class OrderMapper {
             order.setOrderNumber(dto.getOrder_id());
         }
         if (dto.getOrder_ver() != null) {
-            order.setOrderVer(dto.getOrder_ver());
+            try { order.setOrderVer(Integer.parseInt(dto.getOrder_ver().replaceAll("[^0-9]", ""))); } catch (Exception e) { order.setOrderVer(1); }
         }
         if (dto.getOrder_unique() != null) {
             order.setOrderUnique(dto.getOrder_unique());
@@ -102,14 +103,15 @@ public class OrderMapper {
         order.setWuLiaoShuoMing(dto.getWuLiaoShuoMing());
         order.setZhiLiangYaoQiu(dto.getZhiLiangYaoQiu());
         order.setBeiZhu(dto.getBeiZhu());
-        order.setKeLaiXinXi(dto.getKeLaiXinXi());
+        order.setKeLaiXinXi(dto.getKeLaiXinxi());
 
-        order.setXiaZiliaodaiRiqi1(dto.getXiaZiliaodaiRiqi1());
-        order.setXiaZiliaodaiRiqi2(dto.getXiaZiliaodaiRiqi2());
-        order.setYinzhangRiqi1(dto.getYinzhangRiqi1());
-        order.setYinzhangRiqi2(dto.getYinzhangRiqi2());
-        order.setJiaoHuoRiQi1(dto.getJiaoHuoRiQi1());
-        order.setJiaoHuoRiQi2(dto.getJiaoHuoRiQi2());
+        // 日期字段：前端使用 Required/Promise 命名，后端实体使用 1/2 命名
+        order.setXiaZiliaodaiRiqi1(parseDateTime(dto.getXiaZiliaodaiRiqiRequired()));
+        order.setXiaZiliaodaiRiqi2(parseDateTime(dto.getXiaZiliaodaiRiqiPromise()));
+        order.setYinzhangRiqi1(parseDateTime(dto.getYinzhangRiqiRequired()));
+        order.setYinzhangRiqi2(parseDateTime(dto.getYinzhangRiqiPromise()));
+        order.setJiaoHuoRiQi1(parseDateTime(dto.getChuHuoRiqiRequired()));
+        order.setJiaoHuoRiQi2(parseDateTime(dto.getChuHuoRiqiPromise()));
 
         order.setYeWuDaiBiaoFenJi(dto.getYeWuDaiBiaoFenJi());
         order.setShenHeRen(dto.getShenHeRen());
@@ -159,14 +161,24 @@ public class OrderMapper {
         return dto;
     }
 
+    private java.time.LocalDateTime parseDateTime(String dateStr) {
+        if (dateStr == null || dateStr.isEmpty()) return null;
+        try {
+            if (dateStr.length() == 10) return java.time.LocalDate.parse(dateStr).atStartOfDay();
+            return java.time.LocalDateTime.parse(dateStr);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     private AuditLogDTO toAuditLogDTO(AuditLog log) {
         AuditLogDTO dto = new AuditLogDTO();
         dto.setAction(log.getAction());
-        dto.setActionDescription(log.getActionDescription());
-        dto.setUserId(log.getUserId());
+        dto.setComment(log.getActionDescription());
+        dto.setOperator(log.getUserId());
         dto.setOldValue(log.getOldValue());
         dto.setNewValue(log.getNewValue());
-        dto.setTime(log.getTime());
+        dto.setTime(log.getTime() != null ? log.getTime().toString() : null);
         return dto;
     }
 }

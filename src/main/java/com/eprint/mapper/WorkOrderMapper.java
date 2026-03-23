@@ -20,7 +20,7 @@ public class WorkOrderMapper {
         WorkOrderDTO dto = new WorkOrderDTO();
 
         dto.setWork_id(workOrder.getWorkId());
-        dto.setWork_ver(workOrder.getWorkVer());
+        dto.setWork_ver(workOrder.getWorkVer() != null ? workOrder.getWorkVer().toString() : null);
         dto.setWork_unique(workOrder.getWorkUnique());
         dto.setWorkorderstatus(workOrder.getReviewStatus() != null ? workOrder.getReviewStatus().name() : null);
         dto.setWork_clerk(workOrder.getWorkClerk());
@@ -56,7 +56,7 @@ public class WorkOrderMapper {
             workOrder.setWorkId(dto.getWork_id());
         }
         if (dto.getWork_ver() != null) {
-            workOrder.setWorkVer(dto.getWork_ver());
+            try { workOrder.setWorkVer(Integer.parseInt(dto.getWork_ver().replaceAll("[^0-9]", ""))); } catch (Exception e) { workOrder.setWorkVer(1); }
         }
         if (dto.getWork_unique() != null) {
             workOrder.setWorkUnique(dto.getWork_unique());
@@ -88,26 +88,30 @@ public class WorkOrderMapper {
 
     private IntermediaMaterialDTO toIntermediaMaterialDTO(MaterialLine line) {
         IntermediaMaterialDTO dto = new IntermediaMaterialDTO();
-        dto.setMaterialName(line.getMaterialName());
-        dto.setSpecification(line.getSpecification());
-        dto.setQuantity(line.getQuantity());
-        dto.setUnit(line.getUnit());
-        dto.setKaiShiRiQi(line.getKaiShiShiJian());
-        dto.setYuQiJieShu(line.getJieShuShiJian());
-        dto.setDangQianJinDu(line.getDangQianJinDu());
+        dto.setWuLiaoMingCheng(line.getMaterialName());
+        dto.setCaiLiaoGuiGe(line.getSpecification());
+        dto.setYinChuShu(line.getQuantity());
+        dto.setYiGouJianShu(line.getYiGouJianShu());
+        dto.setHead_PUR(line.getHeadPUR());
+        dto.setHead_OUT(line.getHeadOUT());
+        dto.setKaiShiRiQi(line.getKaiShiShiJian() != null ? line.getKaiShiShiJian().toString() : null);
+        dto.setYuQiJieShu(line.getJieShuShiJian() != null ? line.getJieShuShiJian().toString() : null);
+        dto.setDangQianJinDu(line.getDangQianJinDu() != null ? Integer.parseInt(line.getDangQianJinDu()) : null);
         dto.setNotes(line.getNotes());
         return dto;
     }
 
     private MaterialLine toMaterialLine(IntermediaMaterialDTO dto) {
         MaterialLine line = new MaterialLine();
-        line.setMaterialName(dto.getMaterialName());
-        line.setSpecification(dto.getSpecification());
-        line.setQuantity(dto.getQuantity());
-        line.setUnit(dto.getUnit());
-        line.setKaiShiShiJian(dto.getKaiShiRiQi());
-        line.setJieShuShiJian(dto.getYuQiJieShu());
-        line.setDangQianJinDu(dto.getDangQianJinDu());
+        line.setMaterialName(dto.getWuLiaoMingCheng());
+        line.setSpecification(dto.getCaiLiaoGuiGe());
+        line.setQuantity(dto.getYinChuShu());
+        line.setYiGouJianShu(dto.getYiGouJianShu());
+        line.setHeadPUR(dto.getHead_PUR());
+        line.setHeadOUT(dto.getHead_OUT());
+        line.setKaiShiShiJian(dto.getKaiShiRiQi() != null ? java.time.LocalDateTime.parse(dto.getKaiShiRiQi()) : null);
+        line.setJieShuShiJian(dto.getYuQiJieShu() != null ? java.time.LocalDateTime.parse(dto.getYuQiJieShu()) : null);
+        line.setDangQianJinDu(dto.getDangQianJinDu() != null ? dto.getDangQianJinDu().toString() : null);
         line.setNotes(dto.getNotes());
         return line;
     }
@@ -125,11 +129,11 @@ public class WorkOrderMapper {
     private AuditLogDTO toAuditLogDTO(AuditLog log) {
         AuditLogDTO dto = new AuditLogDTO();
         dto.setAction(log.getAction());
-        dto.setActionDescription(log.getActionDescription());
-        dto.setUserId(log.getUserId());
+        dto.setComment(log.getActionDescription());
+        dto.setOperator(log.getUserId());
         dto.setOldValue(log.getOldValue());
         dto.setNewValue(log.getNewValue());
-        dto.setTime(log.getTime());
+        dto.setTime(log.getTime() != null ? log.getTime().toString() : null);
         return dto;
     }
 }
