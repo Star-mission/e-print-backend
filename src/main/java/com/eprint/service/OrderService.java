@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -98,19 +99,43 @@ public class OrderService {
         Order order;
         boolean isUpdate = false;
 
-        // 判断是创建还是更新
-        if (orderDTO.getOrder_id() != null && !orderDTO.getOrder_id().isEmpty()) {
-            // 尝试查找现有订单
-            order = orderRepository.findByOrderUnique(orderDTO.getOrder_unique())
-                    .orElse(new Order());
-            if (order.getId() != null) {
-                isUpdate = true;  // 找到现有订单，标记为更新操作
+        String orderId = orderDTO.getOrder_id();
+
+        if (orderId != null && !orderId.isEmpty()) {
+            // 按订单号查找已有订单（不含版本号）
+            Optional<Order> existingOpt = orderRepository.findByOrderNumber(orderId);
+
+            if (existingOpt.isEmpty()) {
+                // 情况1：库里没有，直接创建，版本号为1
+                order = new Order();
+                order.setOrderNumber(orderId);
+                order.setOrderVer(1);
+            } else {
+                Order existing = existingOpt.get();
+                Order.OrderStatus existingStatus = existing.getStatus();
+
+                if (existingStatus == Order.OrderStatus.驳回) {
+                    // 情况2.1：订单被拒绝，覆盖原订单，版本号重置为1
+                    order = existing;
+                    order.setOrderVer(1);
+                    isUpdate = true;
+                } else if (existingStatus == Order.OrderStatus.通过
+                        || existingStatus == Order.OrderStatus.生产中) {
+                    // 情况2.2：订单已通过或生产中，新建版本号+1
+                    order = new Order();
+                    order.setOrderNumber(orderId);
+                    order.setOrderVer(existing.getOrderVer() != null ? existing.getOrderVer() + 1 : 2);
+                } else {
+                    // 其他状态（草稿、待审核等）：直接覆盖
+                    order = existing;
+                    isUpdate = true;
+                }
             }
         } else {
-            // 创建新订单
+            // 未提供订单号，自动生成
             order = new Order();
-            order.setOrderNumber(generateOrderNumber());  // 自动生成订单号
-            order.setOrderVer(1);  // 初始版本号为 1
+            order.setOrderNumber(generateOrderNumber());
+            order.setOrderVer(1);
         }
 
         // 将 DTO 数据映射到实体对象
@@ -118,15 +143,13 @@ public class OrderService {
 
         // 设置订单状态
         if (isDraft) {
-            order.setStatus(Order.OrderStatus.草稿);  // 草稿状态
+            order.setStatus(Order.OrderStatus.草稿);
         } else {
-            order.setStatus(Order.OrderStatus.待审核);  // 待审核状态
+            order.setStatus(Order.OrderStatus.待审核);
         }
 
-        // 生成订单唯一标识（orderNumber_version）
-        if (order.getOrderUnique() == null) {
-            order.setOrderUnique(order.getOrderNumber() + "_" + order.getOrderVer());
-        }
+        // 生成/更新订单唯一标识
+        order.setOrderUnique(order.getOrderNumber() + "_" + order.getOrderVer());
 
         // 处理上传的附件文件
         if (files != null && !files.isEmpty()) {
