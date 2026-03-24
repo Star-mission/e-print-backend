@@ -45,6 +45,9 @@ public class EngineeringOrder {
     @Column(length = 2000)
     private String beiZhu;
 
+    @Column(nullable = false)
+    private String isDeleted = "否";  // 是否删除（软删除标记，默认否）
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

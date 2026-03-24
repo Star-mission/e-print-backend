@@ -248,6 +248,12 @@ public class Order {
     // ==========================================
 
     /**
+     * 是否删除（软删除标记，默认否）
+     */
+    @Column(nullable = false)
+    private String isDeleted = "否";
+
+    /**
      * 创建时间（不可更新）
      */
     @Column(nullable = false, updatable = false)
