@@ -382,6 +382,27 @@ public class WorkOrderService {
         return workOrderMapper.toDTO(savedWorkOrder, getAuditLogs(savedWorkOrder.getEngineeringOrderId()));
     }
 
+    /**
+     * 软删除工程单
+     */
+    @Transactional
+    public void deleteWorkOrder(String workUnique) {
+        EngineeringOrder workOrder = engineeringOrderRepository.findByWorkUnique(workUnique)
+                .orElseThrow(() -> new RuntimeException("Work order not found: " + workUnique));
+
+        workOrder.setIsDeleted("是");
+        engineeringOrderRepository.save(workOrder);
+
+        createAuditLog(
+                "DELETE_WORK_ORDER",
+                "工程单已软删除",
+                "EngineeringOrder",
+                workOrder.getEngineeringOrderId(),
+                workOrder.getWorkUnique(),
+                null
+        );
+    }
+
     private String generateWorkOrderId() {
         return "WORK-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0, 8);
     }

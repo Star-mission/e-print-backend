@@ -344,18 +344,19 @@ public class OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found: " + id));
 
+        // 软删除：标记为已删除，不物理删除数据
+        order.setIsDeleted("是");
+        orderRepository.save(order);
+
         // 记录删除操作的审计日志
         createAuditLog(
                 "DELETE_ORDER",
-                "订单已删除",
+                "订单已软删除",
                 "Order",
                 order.getOrderNumber(),
                 order.getOrderUnique(),
                 null
         );
-
-        // 删除订单（级联删除关联数据）
-        orderRepository.delete(order);
     }
 
     // ==========================================

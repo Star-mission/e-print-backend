@@ -193,6 +193,21 @@ public class WorkOrderController {
     }
 
     /**
+     * 软删除工程单
+     * DELETE /api/workOrders/{workUnique}
+     */
+    @DeleteMapping("/{workUnique}")
+    public ResponseEntity<Void> deleteWorkOrder(@PathVariable String workUnique) {
+        try {
+            workOrderService.deleteWorkOrder(workUnique);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            log.error("Error deleting work order", e);
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    /**
      * 更新生产装订进度
      * POST /api/workOrders/updateProgressMnf
      */
