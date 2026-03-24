@@ -11,11 +11,17 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     Optional<Order> findByOrderNumber(String orderNumber);
 
+    Optional<Order> findByOrderNumberAndIsDeletedNot(String orderNumber, String isDeleted);
+
     Optional<Order> findByOrderUnique(String orderUnique);
 
-    List<Order> findBySales(String sales);
+    Optional<Order> findByOrderUniqueAndIsDeletedNot(String orderUnique, String isDeleted);
 
-    List<Order> findByAudit(String audit);
+    List<Order> findBySalesAndIsDeletedNot(String sales, String isDeleted);
 
-    List<Order> findByStatus(Order.OrderStatus status);
+    List<Order> findByAuditAndIsDeletedNot(String audit, String isDeleted);
+
+    List<Order> findByStatusAndIsDeletedNot(Order.OrderStatus status, String isDeleted);
+
+    List<Order> findAllByIsDeletedNot(String isDeleted);
 }

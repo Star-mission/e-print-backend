@@ -103,7 +103,7 @@ public class OrderService {
 
         if (orderId != null && !orderId.isEmpty()) {
             // 按订单号查找已有订单（不含版本号）
-            Optional<Order> existingOpt = orderRepository.findByOrderNumber(orderId);
+            Optional<Order> existingOpt = orderRepository.findByOrderNumberAndIsDeletedNot(orderId, "是");
 
             if (existingOpt.isEmpty()) {
                 // 情况1：库里没有，直接创建，版本号为1
@@ -203,7 +203,7 @@ public class OrderService {
      */
     @Transactional(readOnly = true)
     public OrderDTO getOrderByUnique(String orderUnique) {
-        Order order = orderRepository.findByOrderUnique(orderUnique)
+        Order order = orderRepository.findByOrderUniqueAndIsDeletedNot(orderUnique, "是")
                 .orElseThrow(() -> new RuntimeException("Order not found: " + orderUnique));
 
         List<AuditLog> auditLogs = getAuditLogs(order.getOrderNumber());
@@ -220,7 +220,7 @@ public class OrderService {
      */
     @Transactional(readOnly = true)
     public List<OrderDTO> getOrdersBySales(String sales) {
-        List<Order> orders = orderRepository.findBySales(sales);
+        List<Order> orders = orderRepository.findBySalesAndIsDeletedNot(sales, "是");
         return orders.stream()
                 .map(order -> orderMapper.toDTO(order, getAuditLogs(order.getOrderNumber())))
                 .collect(Collectors.toList());
@@ -236,7 +236,7 @@ public class OrderService {
      */
     @Transactional(readOnly = true)
     public List<OrderDTO> getOrdersByAudit(String audit) {
-        List<Order> orders = orderRepository.findByAudit(audit);
+        List<Order> orders = orderRepository.findByAuditAndIsDeletedNot(audit, "是");
         return orders.stream()
                 .map(order -> orderMapper.toDTO(order, getAuditLogs(order.getOrderNumber())))
                 .collect(Collectors.toList());
@@ -253,7 +253,7 @@ public class OrderService {
     @Transactional(readOnly = true)
     public List<OrderDTO> getOrdersByStatus(String statusText) {
         Order.OrderStatus status = Order.OrderStatus.valueOf(statusText);
-        List<Order> orders = orderRepository.findByStatus(status);
+        List<Order> orders = orderRepository.findByStatusAndIsDeletedNot(status, "是");
         return orders.stream()
                 .map(order -> orderMapper.toDTO(order, getAuditLogs(order.getOrderNumber())))
                 .collect(Collectors.toList());
@@ -268,7 +268,7 @@ public class OrderService {
      */
     @Transactional(readOnly = true)
     public List<OrderDTO> getAllOrders() {
-        List<Order> orders = orderRepository.findAll();
+        List<Order> orders = orderRepository.findAllByIsDeletedNot("是");
         return orders.stream()
                 .map(order -> orderMapper.toDTO(order, getAuditLogs(order.getOrderNumber())))
                 .collect(Collectors.toList());

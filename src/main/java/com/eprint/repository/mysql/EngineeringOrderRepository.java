@@ -13,11 +13,13 @@ public interface EngineeringOrderRepository extends JpaRepository<EngineeringOrd
 
     Optional<EngineeringOrder> findByWorkUnique(String workUnique);
 
+    Optional<EngineeringOrder> findByWorkUniqueAndIsDeletedNot(String workUnique, String isDeleted);
+
     Optional<EngineeringOrder> findByWorkId(String workId);
 
-    List<EngineeringOrder> findByWorkClerk(String workClerk);
+    List<EngineeringOrder> findByWorkClerkAndIsDeletedNot(String workClerk, String isDeleted);
 
-    List<EngineeringOrder> findByWorkAudit(String workAudit);
+    List<EngineeringOrder> findByWorkAuditAndIsDeletedNot(String workAudit, String isDeleted);
 
-    List<EngineeringOrder> findByReviewStatus(EngineeringOrder.OrderStatus reviewStatus);
+    List<EngineeringOrder> findByReviewStatusAndIsDeletedNot(EngineeringOrder.OrderStatus reviewStatus, String isDeleted);
 }

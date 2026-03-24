@@ -111,13 +111,17 @@ public class WorkOrderService {
         EngineeringOrder workOrder = engineeringOrderRepository.findByWorkUnique(workUnique)
                 .orElseThrow(() -> new RuntimeException("Work order not found: " + workUnique));
 
+        if ("是".equals(workOrder.getIsDeleted())) {
+            throw new RuntimeException("Work order has been deleted: " + workUnique);
+        }
+
         List<AuditLog> auditLogs = getAuditLogs(workOrder.getEngineeringOrderId());
         return workOrderMapper.toDTO(workOrder, auditLogs);
     }
 
     @Transactional(readOnly = true)
     public List<WorkOrderDTO> getWorkOrdersByClerk(String clerk) {
-        List<EngineeringOrder> workOrders = engineeringOrderRepository.findByWorkClerk(clerk);
+        List<EngineeringOrder> workOrders = engineeringOrderRepository.findByWorkClerkAndIsDeletedNot(clerk, "是");
         return workOrders.stream()
                 .map(wo -> workOrderMapper.toDTO(wo, getAuditLogs(wo.getEngineeringOrderId())))
                 .collect(Collectors.toList());
@@ -125,7 +129,7 @@ public class WorkOrderService {
 
     @Transactional(readOnly = true)
     public List<WorkOrderDTO> getWorkOrdersByAudit(String audit) {
-        List<EngineeringOrder> workOrders = engineeringOrderRepository.findByWorkAudit(audit);
+        List<EngineeringOrder> workOrders = engineeringOrderRepository.findByWorkAuditAndIsDeletedNot(audit, "是");
         return workOrders.stream()
                 .map(wo -> workOrderMapper.toDTO(wo, getAuditLogs(wo.getEngineeringOrderId())))
                 .collect(Collectors.toList());
@@ -134,7 +138,7 @@ public class WorkOrderService {
     @Transactional(readOnly = true)
     public List<WorkOrderDTO> getWorkOrdersByStatus(String statusText) {
         EngineeringOrder.OrderStatus status = EngineeringOrder.OrderStatus.valueOf(statusText);
-        List<EngineeringOrder> workOrders = engineeringOrderRepository.findByReviewStatus(status);
+        List<EngineeringOrder> workOrders = engineeringOrderRepository.findByReviewStatusAndIsDeletedNot(status, "是");
         return workOrders.stream()
                 .map(wo -> workOrderMapper.toDTO(wo, getAuditLogs(wo.getEngineeringOrderId())))
                 .collect(Collectors.toList());
