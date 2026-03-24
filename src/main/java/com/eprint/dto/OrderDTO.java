@@ -71,8 +71,6 @@ public class OrderDTO {
     private String shenHeRen;
     private String daYinRen;
 
-    private String isDeleted;  // 是否删除
-
     private List<ProductDTO> chanPinMingXi;
     private List<AttachmentDTO> attachments;
     private List<AuditLogDTO> auditLogs;

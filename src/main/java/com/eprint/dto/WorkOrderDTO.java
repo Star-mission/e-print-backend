@@ -37,8 +37,6 @@ public class WorkOrderDTO {
 
     private String beiZhu;
 
-    private String isDeleted;  // 是否删除
-
     private List<IntermediaMaterialDTO> intermedia;
     private List<AttachmentDTO> attachments;
     private List<AuditLogDTO> auditLogs;
