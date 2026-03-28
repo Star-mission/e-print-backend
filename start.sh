@@ -4,6 +4,14 @@ echo "======================================"
 echo "E-Print Backend - 启动脚本"
 echo "======================================"
 
+# 加载本地环境变量（如果存在）
+if [ -f .env ]; then
+  set -a
+  . ./.env
+  set +a
+  echo "✓ 已加载 .env"
+fi
+
 # 检查 Java 版本
 echo "检查 Java 版本..."
 java -version

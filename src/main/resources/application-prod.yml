@@ -66,3 +66,15 @@ logging:
 # 文件上传目录
 file:
   upload-dir: ${FILE_UPLOAD_DIR:/var/eprint/uploads}
+
+external:
+  token:
+    provider: ${BLACKLAKE_PROVIDER:blacklake}
+    base-url: ${BLACKLAKE_BASE_URL:https://liteweb.blacklake.cn}
+    login-path: ${BLACKLAKE_LOGIN_PATH:/api/user/v1/users/_login}
+    client-header-name: ${BLACKLAKE_CLIENT_HEADER_NAME:X-CLIENT}
+    client-header-value: ${BLACKLAKE_CLIENT_HEADER_VALUE:lite-web}
+    phone: ${BLACKLAKE_PHONE:}
+    password: ${BLACKLAKE_PASSWORD:}
+    refresh-interval-ms: ${BLACKLAKE_TOKEN_REFRESH_INTERVAL_MS:86400000}
+    schedule-initial-delay-ms: ${BLACKLAKE_TOKEN_SCHEDULE_INITIAL_DELAY_MS:86400000}

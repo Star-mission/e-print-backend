@@ -74,6 +74,25 @@ mvn spring-boot:run
 
 应用将在 `http://localhost:3000` 启动
 
+### 黑湖（Blacklake）Token 说明
+
+系统启动时会自动调用黑湖登录接口获取 token，并将结果写入 MySQL 的 `external_tokens` 表，供后续黑湖相关接口复用。
+
+默认配置位置：
+- 服务实现：`src/main/java/com/eprint/service/ExternalTokenService.java`
+- 环境变量示例：`.env.example`
+
+默认对接参数：
+- Base URL：`https://liteweb.blacklake.cn`
+- Login Path：`/api/user/v1/users/_login`
+- 环境变量：`BLACKLAKE_PHONE`、`BLACKLAKE_PASSWORD`
+
+刷新时机：
+- 应用启动后立即刷新一次
+- 之后按 `external.token.refresh-interval-ms` 定时刷新
+
+如果未配置 `BLACKLAKE_PHONE` 或 `BLACKLAKE_PASSWORD`，本次 token 刷新会失败，但不会阻止后端服务启动。
+
 ---
 
 ## 技术栈

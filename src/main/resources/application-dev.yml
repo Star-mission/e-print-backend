@@ -47,3 +47,15 @@ logging:
 # 文件上传目录
 file:
   upload-dir: ./uploads
+
+external:
+  token:
+    provider: blacklake
+    base-url: https://liteweb.blacklake.cn
+    login-path: /api/user/v1/users/_login
+    client-header-name: X-CLIENT
+    client-header-value: lite-web
+    phone: ${BLACKLAKE_PHONE:}
+    password: ${BLACKLAKE_PASSWORD:}
+    refresh-interval-ms: ${BLACKLAKE_TOKEN_REFRESH_INTERVAL_MS:86400000}
+    schedule-initial-delay-ms: ${BLACKLAKE_TOKEN_SCHEDULE_INITIAL_DELAY_MS:86400000}
