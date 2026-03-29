@@ -13,7 +13,7 @@
 
 **启动步骤：**
 
-1. 启动数据库（MySQL + MongoDB）：
+1. 启动数据库（MySQL）：
 ```bash
 docker-compose up -d
 ```
@@ -48,11 +48,10 @@ docker-compose down -v
 - JDK 17+
 - Maven 3.6+
 - MySQL 8.0（本地安装）
-- MongoDB 6.0（本地安装）
 
 **启动步骤：**
 
-1. 确保 MySQL 和 MongoDB 服务已启动
+1. 确保 MySQL 服务已启动
 
 2. 创建数据库：
 ```sql
@@ -93,14 +92,110 @@ mvn spring-boot:run
 
 如果未配置 `BLACKLAKE_PHONE` 或 `BLACKLAKE_PASSWORD`，本次 token 刷新会失败，但不会阻止后端服务启动。
 
+### 金蝶星辰（Kingdee）app-token 说明
+
+系统启动时会自动调用金蝶星辰接口获取 `app-token`，并将结果写入 MySQL 的 `external_tokens` 表（`provider=kingdee`），与 Blacklake token 共存。
+
+接口来源：
+- Base URL：`https://api.kingdee.com`
+- Token Path：`/jdyconnector/app_management/kingdee_auth_token`
+
+默认配置位置：
+- 服务实现：`src/main/java/com/eprint/service/KingdeeExternalTokenService.java`
+- 启动即刷新：`src/main/java/com/eprint/service/KingdeeExternalTokenRefreshRunner.java`
+- 定时刷新：`src/main/java/com/eprint/service/KingdeeExternalTokenScheduler.java`
+- 环境变量示例：`.env.example`
+
+所需环境变量：
+- `KINGDEE_CLIENT_ID`
+- `KINGDEE_CLIENT_SECRET`
+- `KINGDEE_APP_KEY`
+- `KINGDEE_APP_SECRET`
+
+刷新时机：
+- 应用启动后立即刷新一次
+- 之后每 12 小时定时刷新（默认 43200000ms，可用 `KINGDEE_TOKEN_REFRESH_INTERVAL_MS` 临时调整）
+
+如果缺失任意 Kingdee 配置，本次 token 刷新会失败，但不会阻止后端服务启动。
+
+### 后端启动命令（可直接复制）
+
+#### 1. 切换到 JDK 17
+```bash
+export JAVA_HOME="/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home"
+export PATH="$JAVA_HOME/bin:$PATH"
+java -version
+mvn -v
+```
+
+#### 2. 启动数据库（如使用 Docker）
+```bash
+cd "/Users/openclaw/code/E_print_backend_java"
+docker-compose up -d
+docker-compose ps
+```
+
+#### 3. 编译项目
+```bash
+cd "/Users/openclaw/code/E_print_backend_java"
+mvn clean compile
+```
+
+#### 4. 带 Kingdee 配置启动开发环境
+```bash
+cd "/Users/openclaw/code/E_print_backend_java" && \
+export JAVA_HOME="/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home" && \
+export PATH="$JAVA_HOME/bin:$PATH" && \
+KINGDEE_CLIENT_ID="你的client_id" \
+KINGDEE_CLIENT_SECRET="你的client_secret" \
+KINGDEE_APP_KEY="你的app_key" \
+KINGDEE_APP_SECRET="你的app_secret" \
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
+```
+
+如果还需要同时验证 Blacklake，可一并传入：
+```bash
+cd "/Users/openclaw/code/E_print_backend_java" && \
+export JAVA_HOME="/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home" && \
+export PATH="$JAVA_HOME/bin:$PATH" && \
+KINGDEE_CLIENT_ID="你的client_id" \
+KINGDEE_CLIENT_SECRET="你的client_secret" \
+KINGDEE_APP_KEY="你的app_key" \
+KINGDEE_APP_SECRET="你的app_secret" \
+BLACKLAKE_PHONE="你的手机号" \
+BLACKLAKE_PASSWORD="你的密码" \
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
+```
+
+#### 5. 查询 external_tokens 表确认落库
+```bash
+mysql -u eprint -peprint123 -D E_Bench -e "SELECT provider, LENGTH(token) AS token_length, fetched_at, updated_at FROM external_tokens WHERE provider='kingdee';"
+```
+
+#### 6. 临时把定时刷新改为 60 秒验证
+```bash
+cd "/Users/openclaw/code/E_print_backend_java" && \
+export JAVA_HOME="/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home" && \
+export PATH="$JAVA_HOME/bin:$PATH" && \
+KINGDEE_CLIENT_ID="你的client_id" \
+KINGDEE_CLIENT_SECRET="你的client_secret" \
+KINGDEE_APP_KEY="你的app_key" \
+KINGDEE_APP_SECRET="你的app_secret" \
+KINGDEE_TOKEN_REFRESH_INTERVAL_MS=60000 \
+KINGDEE_TOKEN_SCHEDULE_INITIAL_DELAY_MS=60000 \
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
+```
+
+验证完成后恢复默认值 `43200000`。
+
 ---
 
 ## 技术栈
 
 - **Java**: 17
 - **Spring Boot**: 3.2.3
-- **数据库**: MySQL 8.0 + MongoDB 7.0
-- **ORM**: Spring Data JPA (MySQL) + Spring Data MongoDB
+- **数据库**: MySQL 8.0
+- **ORM**: Spring Data JPA
 - **构建工具**: Maven
 - **其他**: Lombok, MapStruct
 
@@ -120,8 +215,6 @@ E_print_backend_java/
 │   │   │   ├── EngineeringOrder.java     # 工单实体
 │   │   │   ├── MaterialLine.java         # 工单物料行
 │   │   │   ├── Document.java             # 文档附件
-│   │   │   └── mongo/
-│   │   │       └── AuditLog.java         # 审计日志 (MongoDB)
 │   │   ├── dto/                          # 数据传输对象
 │   │   │   ├── OrderDTO.java
 │   │   │   ├── WorkOrderDTO.java
@@ -133,8 +226,6 @@ E_print_backend_java/
 │   │   │   ├── mysql/
 │   │   │   │   ├── OrderRepository.java
 │   │   │   │   └── EngineeringOrderRepository.java
-│   │   │   └── mongo/
-│   │   │       └── AuditLogRepository.java
 │   │   ├── service/                      # 业务逻辑层
 │   │   │   ├── OrderService.java
 │   │   │   ├── WorkOrderService.java
@@ -174,7 +265,7 @@ E_print_backend_java/
 - 物料行管理
 
 ### 审计日志 (Audit Logging)
-- 所有操作自动记录到 MongoDB
+- 所有操作自动记录到 MySQL audit_logs 表
 - 支持按订单号、用户、实体类型查询
 
 ---
@@ -278,24 +369,6 @@ E_print_backend_java/
 | category | ENUM | 分类（OrderAttachment/WorkOrderAttachment） |
 | uploadedAt | DATETIME | 上传时间 |
 
-### MongoDB 数据库（E_Bench_Logs）- 审计日志
-
-#### audit_logs（审计日志集合）
-```json
-{
-  "_id": "ObjectId",
-  "entityType": "Order/EngineeringOrder",
-  "entityId": "订单或工单的唯一标识",
-  "action": "CREATE/UPDATE/DELETE/STATUS_CHANGE",
-  "actionDescription": "操作描述",
-  "userId": "操作用户",
-  "oldValue": {},  // 修改前的值
-  "newValue": {},  // 修改后的值
-  "timestamp": "ISODate",
-  "ipAddress": "IP地址"
-}
-```
-
 ### 数据库关系图
 
 ```
@@ -354,11 +427,6 @@ engineering_orders (1) ----< (N) documents
   - Root 密码：root123
   - 数据持久化：mysql-data 卷
 
-- **MongoDB 7.0**
-  - 端口：27017
-  - 数据库：E_Bench_Logs
-  - 数据持久化：mongodb-data 卷
-
 **常用命令：**
 ```bash
 # 查看容器状态
@@ -373,8 +441,6 @@ docker-compose restart
 # 进入 MySQL 容器
 docker exec -it eprint-mysql mysql -u eprint -peprint123 E_Bench
 
-# 进入 MongoDB 容器
-docker exec -it eprint-mongodb mongosh E_Bench_Logs
 ```
 
 ### 应用配置文件

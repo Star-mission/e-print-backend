@@ -59,3 +59,14 @@ external:
     password: ${BLACKLAKE_PASSWORD:}
     refresh-interval-ms: ${BLACKLAKE_TOKEN_REFRESH_INTERVAL_MS:86400000}
     schedule-initial-delay-ms: ${BLACKLAKE_TOKEN_SCHEDULE_INITIAL_DELAY_MS:86400000}
+
+    kingdee:
+      provider: ${KINGDEE_PROVIDER:kingdee}
+      base-url: ${KINGDEE_BASE_URL:https://api.kingdee.com}
+      token-path: ${KINGDEE_TOKEN_PATH:/jdyconnector/app_management/kingdee_auth_token}
+      client-id: ${KINGDEE_CLIENT_ID:}
+      client-secret: ${KINGDEE_CLIENT_SECRET:}
+      app-key: ${KINGDEE_APP_KEY:}
+      app-secret: ${KINGDEE_APP_SECRET:}
+      refresh-interval-ms: ${KINGDEE_TOKEN_REFRESH_INTERVAL_MS:43200000}
+      schedule-initial-delay-ms: ${KINGDEE_TOKEN_SCHEDULE_INITIAL_DELAY_MS:43200000}
