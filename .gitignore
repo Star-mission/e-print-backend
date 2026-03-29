@@ -29,3 +29,6 @@ Thumbs.db
 
 # 忽略本地环境变量（可能包含敏感信息）
 .env
+
+# 忽略本地敏感配置
+application-local.yml

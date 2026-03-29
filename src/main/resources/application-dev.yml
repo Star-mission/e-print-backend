@@ -5,6 +5,9 @@ spring:
   application:
     name: eprint-backend
 
+  config:
+    import: optional:classpath:application-local.yml
+
   # MySQL 数据源配置（Docker）
   datasource:
     url: jdbc:mysql://localhost:3306/E_Bench?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
