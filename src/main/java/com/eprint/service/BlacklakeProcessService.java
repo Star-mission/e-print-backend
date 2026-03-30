@@ -62,11 +62,11 @@ public class BlacklakeProcessService {
         int pageSize = 200;
         int total = Integer.MAX_VALUE;
         int synced = 0;
+        int fetched = 0;
 
-        while ((pageNum - 1) * pageSize < total) {
+        while (synced == 0 || fetched > 0) {
             Map<String, Object> body = Map.of(
-                    "pageNum", pageNum,
-                    "pageSize", pageSize
+                    "page", Map.of("pageNum", pageNum, "pageSize", pageSize)
             );
             log.info("Syncing Blacklake processes: page={}", pageNum);
 
@@ -91,13 +91,15 @@ public class BlacklakeProcessService {
                 total = ((Number) totalObj).intValue();
             }
 
-            Object recordsObj = data.get("records");
+            Object recordsObj = data.get("data");
             if (!(recordsObj instanceof List)) {
                 log.warn("Blacklake process sync: no records on page {}", pageNum);
                 break;
             }
 
             List<?> records = (List<?>) recordsObj;
+            fetched = records.size();
+            if (fetched == 0) break;
             for (Object rec : records) {
                 if (!(rec instanceof Map)) continue;
                 Map<?, ?> item = (Map<?, ?>) rec;
@@ -108,6 +110,7 @@ public class BlacklakeProcessService {
                     log.error("Blacklake process sync: failed to upsert record id={}: {}", item.get("id"), e.getMessage());
                 }
             }
+            if (synced >= total) break;
 
             pageNum++;
         }
