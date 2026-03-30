@@ -93,8 +93,9 @@ public class KingdeeExternalTokenService {
         String appSignature = computeAppSignature(appKey, appSecret);
         String apiSignature = computeApiSignature(tokenPath, appKey, appSignature, nonce, ts, clientSecret);
 
-        String url = normalizeUrl(baseUrl, tokenPath) + "?app_key=" + encodeURIComponentLikeJs(appKey)
+        String urlStr = normalizeUrl(baseUrl, tokenPath) + "?app_key=" + encodeURIComponentLikeJs(appKey)
                 + "&app_signature=" + encodeURIComponentLikeJs(appSignature);
+        java.net.URI url = java.net.URI.create(urlStr);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -102,17 +103,27 @@ public class KingdeeExternalTokenService {
         headers.set("X-Api-Auth-Version", "2.0");
         headers.set("X-Api-TimeStamp", ts);
         headers.set("X-Api-Nonce", nonce);
-        headers.set("X-Api-SignHeaders", "X-Api-Nonce,X-Api-TimeStamp");
+        headers.set("X-Api-SignHeaders", "x-api-nonce,x-api-timestamp");
         headers.set("X-Api-Signature", apiSignature);
 
-        ResponseEntity<KingdeeTokenResponse> response;
+        ResponseEntity<String> rawResponse;
         try {
-            response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), KingdeeTokenResponse.class);
+            RestTemplate noErrorRestTemplate = new RestTemplate();
+            noErrorRestTemplate.setErrorHandler(new org.springframework.web.client.DefaultResponseErrorHandler() {
+                @Override
+                public boolean hasError(org.springframework.http.client.ClientHttpResponse r) { return false; }
+            });
+            rawResponse = noErrorRestTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), String.class); // url is java.net.URI, no re-encoding
         } catch (RestClientException ex) {
             throw new IllegalStateException("Failed to call Kingdee token endpoint", ex);
         }
-
-        KingdeeTokenResponse body = response.getBody();
+        log.info("Kingdee token raw response: status={}, body={}", rawResponse.getStatusCode(), rawResponse.getBody());
+        KingdeeTokenResponse body;
+        try {
+            body = new com.fasterxml.jackson.databind.ObjectMapper().readValue(rawResponse.getBody(), KingdeeTokenResponse.class);
+        } catch (Exception ex) {
+            throw new IllegalStateException("Failed to parse Kingdee token response: " + rawResponse.getBody(), ex);
+        }
         if (body == null) {
             throw new IllegalStateException("Kingdee token endpoint returned empty body");
         }
