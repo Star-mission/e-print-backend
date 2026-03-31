@@ -144,6 +144,29 @@ public class BlacklakeProcessService {
         Object cfv = item.get("customFieldValues");
         if (cfv != null) {
             process.setCustomFieldValues(objectMapper.writeValueAsString(cfv));
+            if (cfv instanceof List) {
+                for (Object entry : (List<?>) cfv) {
+                    if (!(entry instanceof Map)) continue;
+                    Map<?, ?> f = (Map<?, ?>) entry;
+                    Object fid = f.get("fieldId");
+                    Object val = f.get("value");
+                    if (fid == null || val == null) continue;
+                    try {
+                        double dval = Double.parseDouble(val.toString());
+                        switch (((Number) fid).intValue()) {
+                            case 199685 -> process.setCfUnitPrice(dval);
+                            case 212103 -> process.setCfLineNo(dval);
+                            case 293509 -> process.setCfCard2(dval);
+                            case 293510 -> process.setCfBox2(dval);
+                            case 293511 -> process.setCfBook2(dval);
+                            case 293512 -> process.setCfCard1(dval);
+                            case 293513 -> process.setCfBox1(dval);
+                            case 293514 -> process.setCfBook1(dval);
+                            case 334650 -> process.setCfDiscount(dval);
+                        }
+                    } catch (NumberFormatException ignored) {}
+                }
+            }
         }
 
         process.setSyncedAt(LocalDateTime.now());

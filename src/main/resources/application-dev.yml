@@ -40,6 +40,12 @@ server:
 
 # 日志配置
 logging:
+  file:
+    name: ./logs/eprint.log
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 7
   level:
     com.eprint: DEBUG
     org.springframework.web: INFO
