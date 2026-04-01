@@ -1,7 +1,7 @@
 package com.eprint.controller;
 
 import com.eprint.dto.BlacklakeProcessQueryDTO;
-import com.eprint.service.BlacklakeProcessService;
+import com.eprint.sdk.blacklake.BlacklakeProcessService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;

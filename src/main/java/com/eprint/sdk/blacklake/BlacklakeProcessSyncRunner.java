@@ -1,4 +1,4 @@
-package com.eprint.service;
+package com.eprint.sdk.blacklake;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,13 +9,13 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class KingdeeExternalTokenRefreshRunner implements ApplicationRunner {
+public class BlacklakeProcessSyncRunner implements ApplicationRunner {
 
-    private final KingdeeExternalTokenService kingdeeExternalTokenService;
+    private final BlacklakeProcessService blacklakeProcessService;
 
     @Override
     public void run(ApplicationArguments args) {
-        log.info("Triggering initial Kingdee token refresh on application startup");
-        kingdeeExternalTokenService.refreshAndStoreTokenSafely();
+        log.info("Triggering initial Blacklake process sync on application startup");
+        blacklakeProcessService.syncAllProcessesSafely();
     }
 }

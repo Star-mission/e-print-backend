@@ -1,4 +1,4 @@
-package com.eprint.service;
+package com.eprint.sdk.blacklake;
 
 import com.eprint.entity.ExternalToken;
 import com.eprint.repository.mysql.ExternalTokenRepository;
@@ -29,18 +29,8 @@ import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ExternalTokenService {
+public class BlacklakeTokenService {
 
-    /**
-     * 外部系统 token 刷新与持久化。
-     *
-     * 当前默认对接「黑湖（Blacklake）」：
-     * - baseUrl 默认 https://liteweb.blacklake.cn
-     * - 登录接口默认 /api/user/v1/users/_login
-     *
-     * 启动时会自动刷新一次（见 {@link ExternalTokenRefreshRunner}），随后按配置定时刷新（见 {@link ExternalTokenScheduler}）。
-     * 成功获取到的 token 会写入 MySQL 表 external_tokens（provider 维度保存），供后续调用黑湖相关接口复用。
-     */
     private final ExternalTokenRepository externalTokenRepository;
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -59,11 +49,6 @@ public class ExternalTokenService {
     @Value("${external.token.client-header-value:lite-web}")
     private String clientHeaderValue;
 
-    /**
-     * 黑湖登录手机号/密码：
-     * - 推荐通过环境变量 BLACKLAKE_PHONE / BLACKLAKE_PASSWORD 注入（见 application-*.yml）
-     * - 这两个值缺失时会导致本次 token 刷新失败（但不会阻止服务启动）
-     */
     @Value("${external.token.phone:}")
     private String phone;
 
@@ -169,27 +154,27 @@ public class ExternalTokenService {
 @Slf4j
 @Component
 @RequiredArgsConstructor
-class ExternalTokenRefreshRunner implements ApplicationRunner {
+class BlacklakeTokenRefreshRunner implements ApplicationRunner {
 
-    private final ExternalTokenService externalTokenService;
+    private final BlacklakeTokenService blacklakeTokenService;
 
     @Override
     public void run(ApplicationArguments args) {
-        log.info("Triggering initial token refresh on application startup");
-        externalTokenService.refreshAndStoreTokenSafely();
+        log.info("Triggering initial Blacklake token refresh on application startup");
+        blacklakeTokenService.refreshAndStoreTokenSafely();
     }
 }
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-class ExternalTokenScheduler {
+class BlacklakeTokenScheduler {
 
-    private final ExternalTokenService externalTokenService;
+    private final BlacklakeTokenService blacklakeTokenService;
 
     @Scheduled(fixedDelayString = "${external.token.refresh-interval-ms:86400000}", initialDelayString = "${external.token.schedule-initial-delay-ms:86400000}")
     public void refreshTokenOnSchedule() {
-        log.info("Triggering scheduled token refresh");
-        externalTokenService.refreshAndStoreTokenSafely();
+        log.info("Triggering scheduled Blacklake token refresh");
+        blacklakeTokenService.refreshAndStoreTokenSafely();
     }
 }

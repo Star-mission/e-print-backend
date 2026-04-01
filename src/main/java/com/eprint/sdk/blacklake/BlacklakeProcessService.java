@@ -1,4 +1,4 @@
-package com.eprint.service;
+package com.eprint.sdk.blacklake;
 
 import com.eprint.dto.BlacklakeProcessQueryDTO;
 import com.eprint.entity.BlacklakeProcess;

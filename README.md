@@ -78,7 +78,7 @@ mvn spring-boot:run
 系统启动时会自动调用黑湖登录接口获取 token，并将结果写入 MySQL 的 `external_tokens` 表，供后续黑湖相关接口复用。
 
 默认配置位置：
-- 服务实现：`src/main/java/com/eprint/service/ExternalTokenService.java`
+- 服务实现：`src/main/java/com/eprint/sdk/blacklake/BlacklakeTokenService.java`
 - 环境变量示例：`.env.example`
 
 默认对接参数：
@@ -101,9 +101,9 @@ mvn spring-boot:run
 - Token Path：`/jdyconnector/app_management/kingdee_auth_token`
 
 默认配置位置：
-- 服务实现：`src/main/java/com/eprint/service/KingdeeExternalTokenService.java`
-- 启动即刷新：`src/main/java/com/eprint/service/KingdeeExternalTokenRefreshRunner.java`
-- 定时刷新：`src/main/java/com/eprint/service/KingdeeExternalTokenScheduler.java`
+- 服务实现：`src/main/java/com/eprint/sdk/kingdee/KingdeeTokenService.java`
+- 启动即刷新：`src/main/java/com/eprint/sdk/kingdee/KingdeeTokenRefreshRunner.java`
+- 定时刷新：`src/main/java/com/eprint/sdk/kingdee/KingdeeTokenScheduler.java`
 - 环境变量示例：`.env.example`
 
 所需环境变量：

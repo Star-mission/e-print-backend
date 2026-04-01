@@ -1,4 +1,4 @@
-package com.eprint.service;
+package com.eprint.sdk.kingdee;
 
 import com.eprint.entity.ExternalToken;
 import com.eprint.repository.mysql.ExternalTokenRepository;
@@ -29,7 +29,7 @@ import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class KingdeeExternalTokenService {
+public class KingdeeTokenService {
 
     private final ExternalTokenRepository externalTokenRepository;
     private final RestTemplate restTemplate = new RestTemplate();
@@ -113,7 +113,7 @@ public class KingdeeExternalTokenService {
                 @Override
                 public boolean hasError(org.springframework.http.client.ClientHttpResponse r) { return false; }
             });
-            rawResponse = noErrorRestTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), String.class); // url is java.net.URI, no re-encoding
+            rawResponse = noErrorRestTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
         } catch (RestClientException ex) {
             throw new IllegalStateException("Failed to call Kingdee token endpoint", ex);
         }
@@ -121,53 +121,39 @@ public class KingdeeExternalTokenService {
         KingdeeTokenResponse body;
         try {
             body = new com.fasterxml.jackson.databind.ObjectMapper().readValue(rawResponse.getBody(), KingdeeTokenResponse.class);
-        } catch (Exception ex) {
-            throw new IllegalStateException("Failed to parse Kingdee token response: " + rawResponse.getBody(), ex);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to parse Kingdee token response", e);
         }
+
         if (body == null) {
             throw new IllegalStateException("Kingdee token endpoint returned empty body");
         }
-        if (body.getErrcode() == null) {
-            throw new IllegalStateException("Kingdee token endpoint returned missing errcode");
+        if (body.getErrcode() != null && body.getErrcode() != 0) {
+            throw new IllegalStateException("Kingdee token endpoint returned errcode=" + body.getErrcode()
+                    + ", description=" + body.getDescription());
         }
-        if (body.getErrcode() != 0) {
-            throw new IllegalStateException("Kingdee error errcode=" + body.getErrcode() + ", description=" + body.getDescription());
-        }
-        if (body.getData() == null || body.getData().getAppToken() == null || body.getData().getAppToken().isBlank()) {
-            throw new IllegalStateException("Kingdee response missing app-token");
+        if (body.getData() == null || body.getData().getAppToken() == null) {
+            throw new IllegalStateException("Kingdee token endpoint returned empty data/token");
         }
 
         return body.getData().getAppToken();
     }
 
-    /**
-     * app_signature = Base64(hex(HmacSHA256(appKey, appSecret)))
-     * 注意：Base64 的输入是 hex 字符串（ASCII bytes），不是原始 digest bytes。
-     */
-    static String computeAppSignature(String appKey, String appSecret) {
-        String hex = hmacSha256Hex(appSecret, appKey);
-        return Base64.getEncoder().encodeToString(hex.getBytes(StandardCharsets.UTF_8));
+    private String computeAppSignature(String appKey, String appSecret) {
+        return hmacSha256Hex(appSecret, appKey);
     }
 
-    /**
-     * X-Api-Signature = Base64(hex(HmacSHA256(signingString, clientSecret)))
-     */
-    static String computeApiSignature(String path, String appKey, String appSignature, String nonce, String ts, String clientSecret) {
-        // params string: key ASCII 排序，值二次 encodeURIComponent
+    private String computeApiSignature(String path, String appKey, String appSignature, String nonce, String ts, String clientSecret) {
         Map<String, String> params = new LinkedHashMap<>();
         params.put("app_key", appKey);
         params.put("app_signature", appSignature);
 
-        StringBuilder paramsString = new StringBuilder();
-        params.entrySet().stream()
-                .sorted(Map.Entry.comparingByKey())
-                .forEach(entry -> {
-                    if (paramsString.length() > 0) paramsString.append("&");
-                    String k = entry.getKey();
-                    String v = entry.getValue();
-                    String vv = encodeURIComponentLikeJs(encodeURIComponentLikeJs(v));
-                    paramsString.append(k).append("=").append(vv);
-                });
+        StringBuilder paramsBuilder = new StringBuilder();
+        params.forEach((k, v) -> {
+            if (paramsBuilder.length() > 0) paramsBuilder.append("&");
+            paramsBuilder.append(encodeURIComponentLikeJs(k)).append("=").append(encodeURIComponentLikeJs(v));
+        });
+        String paramsString = paramsBuilder.toString();
 
         String encodedPath = encodeURIComponentLikeJs(path);
         String headersString = "x-api-nonce:" + nonce + "\n" + "x-api-timestamp:" + ts;
@@ -193,10 +179,6 @@ public class KingdeeExternalTokenService {
         }
     }
 
-    /**
-     * JS encodeURIComponent 风格（UTF-8），空格编码为 %20。
-     * 这里实现最关键的兼容点：不要把空格编码为 '+'。
-     */
     static String encodeURIComponentLikeJs(String value) {
         if (value == null) return "";
         StringBuilder out = new StringBuilder(value.length());

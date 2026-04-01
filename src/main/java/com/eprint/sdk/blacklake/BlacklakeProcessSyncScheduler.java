@@ -1,4 +1,4 @@
-package com.eprint.service;
+package com.eprint.sdk.blacklake;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
