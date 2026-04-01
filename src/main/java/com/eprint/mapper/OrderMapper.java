@@ -32,6 +32,21 @@ public class OrderMapper {
         dto.setQiTaShiBie(order.getQiTaShiBie());
         dto.setIsbn(order.getIsbn());
 
+        dto.setFenBanShuoMing2(order.getFenBanShuoMing2());
+        dto.setYinShuaGenSeYaoQiu(order.getYinShuaGenSeYaoQiu());
+        dto.setZhuangDingShouGongYaoQiu(order.getZhuangDingShouGongYaoQiu());
+        dto.setQiTa(order.getQiTa());
+        dto.setKeHuFanKui(order.getKeHuFanKui());
+        dto.setTeShuYaoQiu(order.getTeShuYaoQiu());
+        dto.setKongZhiFangFa(order.getKongZhiFangFa());
+        dto.setDingDanTeBieShuoMing(order.getDingDanTeBieShuoMing());
+        dto.setYangPinPingShenXinXi(order.getYangPinPingShenXinXi());
+        dto.setDingDanPingShenXinXi(order.getDingDanPingShenXinXi());
+
+        dto.setYeWuRiqi(order.getYeWuRiqi() != null ? order.getYeWuRiqi().toString() : null);
+        dto.setShenHeRiqi(order.getShenHeRiqi() != null ? order.getShenHeRiqi().toString() : null);
+        dto.setDaYinRiqi(order.getDaYinRiqi() != null ? order.getDaYinRiqi().toString() : null);
+
         dto.setDingDanShuLiang(order.getDingDanShuLiang());
         dto.setChuYangShuLiang(order.getChuYangShuLiang());
         dto.setChaoBiLiShuLiang(order.getChaoBiLiShuLiang());
@@ -140,6 +155,21 @@ public class OrderMapper {
         dto.setUnitPrice(item.getUnitPrice());
         dto.setTotalPrice(item.getTotalPrice());
         dto.setNotes(item.getNotes());
+
+        dto.setNeiWen(item.getNeiWen());
+        dto.setYongZhiChiCun(item.getYongZhiChiCun());
+        dto.setHouDu(item.getHouDu());
+        dto.setKeZhong(item.getKeZhong());
+        dto.setChanDi(item.getChanDi());
+        dto.setPinPai(item.getPinPai());
+        dto.setZhiLei(item.getZhiLei());
+        dto.setFSC(item.getFSC());
+        dto.setYeShu(item.getYeShu());
+        dto.setYinSe(item.getYinSe());
+        dto.setZhuanSe(item.getZhuanSe());
+        dto.setBiaoMianChuLi(item.getBiaoMianChuLi());
+        dto.setZhuangDingGongYi(item.getZhuangDingGongYi());
+
         return dto;
     }
 
@@ -152,6 +182,21 @@ public class OrderMapper {
         item.setUnitPrice(dto.getUnitPrice());
         item.setTotalPrice(dto.getTotalPrice());
         item.setNotes(dto.getNotes());
+
+        item.setNeiWen(dto.getNeiWen());
+        item.setYongZhiChiCun(dto.getYongZhiChiCun());
+        item.setHouDu(dto.getHouDu());
+        item.setKeZhong(dto.getKeZhong());
+        item.setChanDi(dto.getChanDi());
+        item.setPinPai(dto.getPinPai());
+        item.setZhiLei(dto.getZhiLei());
+        item.setFSC(dto.getFSC());
+        item.setYeShu(dto.getYeShu());
+        item.setYinSe(dto.getYinSe());
+        item.setZhuanSe(dto.getZhuanSe());
+        item.setBiaoMianChuLi(dto.getBiaoMianChuLi());
+        item.setZhuangDingGongYi(dto.getZhuangDingGongYi());
+
         return item;
     }
 
