@@ -89,8 +89,20 @@
 | data[].name | String | 单位名称 |
 | data[].remark | String | 备注 |
 
+#### 响应示例
+```json
+{
+  "code": "01000000",
+  "msg": "成功",
+  "data": {
+    "pageNum": 1, "pageSize": 1, "total": 2,
+    "data": [{"id": 272238, "name": "个", "createdAt": "2025-09-09 17:11:09"}]
+  }
+}
+```
 
 ---
+
 
 ## 2. 产品列表查询
 
@@ -131,6 +143,18 @@
 | customFieldValues | Object[] | 自定义字段值 |
 
 > `reference.allCustomFieldMetadata` 包含自定义字段定义
+
+#### 响应示例
+```json
+{
+  "code": "01000000",
+  "msg": "成功",
+  "data": {
+    "pageNum": 1, "pageSize": 1, "total": 2743,
+    "data": [{"id": 14771029, "productCode": "CP202509270001", "productName": "PAU-读书日记（澳平）V1", "unit": "个"}]
+  }
+}
+```
 
 ---
 
@@ -198,6 +222,18 @@
 | processRoutingSteps[].name | String | 工序名称 |
 | processRoutingSteps[].outputRate | Number | 报工数配比 |
 | processRoutingSteps[].customFieldValues | Object[] | 工序自定义字段（type=1时有值） |
+
+#### 响应示例
+```json
+{
+  "code": "01000000",
+  "msg": "成功",
+  "data": {
+    "pageNum": 1, "pageSize": 1, "total": 2,
+    "data": [{"processRoutingCode": "GYLX202601040001", "processRoutingName": "MJL"}]
+  }
+}
+```
 
 ---
 
@@ -343,6 +379,18 @@
 | equipmentName | String | 设备名称 |
 | enabled | Boolean | 是否启用 |
 
+#### 响应示例
+```json
+{
+  "code": "01000000",
+  "msg": "成功",
+  "data": {
+    "pageNum": 1, "pageSize": 1, "total": 8,
+    "data": [{"id": 98402, "vendorCode": "GYS0001", "vendorName": "供应商B"}]
+  }
+}
+```
+
 
 ---
 
@@ -477,6 +525,18 @@
 | productStatistics.finishedAmount | Number | 合计完工数 |
 | productStatistics.totalFineAmount | Number | 合计良品数 |
 
+#### 响应示例
+```json
+{
+  "code": "01000000",
+  "msg": "成功",
+  "data": {
+    "pageNum": 1, "pageSize": 1, "total": 15,
+    "data": [{"customFormFieldId": 12345, "serialCode": "BD-2026-001", "status": 10}]
+  }
+}
+```
+
 ---
 
 ## 14. 查询用料清单
@@ -537,6 +597,18 @@
 | priority | Number | 优先级 |
 | planAmount / realAmount | Number | 计划数/实际数 |
 | planStartTime / planEndTime | String | 计划时间 |
+
+#### 响应示例
+```json
+{
+  "code": "01000000",
+  "msg": "成功",
+  "data": {
+    "pageNum": 1, "pageSize": 1, "total": 3,
+    "data": [{"projectCode": "KC-12345", "suppNickName": "外部供应商A", "status": 10}]
+  }
+}
+```
 
 ---
 
@@ -1087,6 +1159,15 @@
 | targetType | String | 所属表单类型 |
 | businessObjectType | String | 关联对象类型（type=5时有值，用于接口37） |
 
+#### 响应示例
+```json
+{
+  "code": "01000000",
+  "msg": "成功",
+  "data": [{"id": 199685, "name": "单价", "fieldName": "process175740908049689", "type": 2}]
+}
+```
+
 ---
 
 ## 37. 查询关联对象业务实体
@@ -1106,6 +1187,15 @@
 ### 返回字段
 
 返回对应业务实体的字段集合，结构随 type 动态变化。
+
+#### 响应示例
+```json
+{
+  "code": "01000000",
+  "msg": "成功",
+  "data": [{"id": 3820346, "userName": "admin", "userNickName": "admin"}]
+}
+```
 
 ---
 
@@ -1131,6 +1221,16 @@
 | originalExtension | String | 扩展名 |
 | uri | String | 文件下载地址 |
 | uploaderId | String | 上传人ID |
+
+#### 响应示例
+```json
+{
+  "statusCode": 200,
+  "message": "成功",
+  "data": [],
+  "total": 0
+}
+```
 
 ---
 
@@ -1164,6 +1264,18 @@
 | tsMs | Long | 操作时间毫秒时间戳（用于接口40） |
 | operator | Object | 操作人信息 |
 
+#### 响应示例
+```json
+{
+  "code": "01000000",
+  "msg": "成功",
+  "data": {
+    "pageNum": 1, "pageSize": 1, "total": 33560,
+    "data": [{"instanceId": 21326975, "instanceCode": "13405836", "objectName": "工单"}]
+  }
+}
+```
+
 ---
 
 ## 40. 查询操作日志详情
@@ -1190,3 +1302,14 @@
 | beforeValue | String | 变更前的值 |
 | afterValue | String | 变更后的值 |
 | isModified | Boolean | 是否发生变更 |
+
+#### 响应示例
+```json
+{
+  "code": "01000000",
+  "msg": "成功",
+  "data": {
+    "list": [{"fieldName": "更新时间", "fieldCode": "updatedAt", "isModified": true}]
+  }
+}
+```
