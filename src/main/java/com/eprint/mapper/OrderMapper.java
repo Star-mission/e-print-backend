@@ -114,6 +114,21 @@ public class OrderMapper {
         order.setChuYangShuLiang(dto.getChuYangShuLiang());
         order.setChaoBiLiShuLiang(dto.getChaoBiLiShuLiang());
 
+        order.setFenBanShuoMing2(dto.getFenBanShuoMing2());
+        order.setYinShuaGenSeYaoQiu(dto.getYinShuaGenSeYaoQiu());
+        order.setZhuangDingShouGongYaoQiu(dto.getZhuangDingShouGongYaoQiu());
+        order.setQiTa(dto.getQiTa());
+        order.setKeHuFanKui(dto.getKeHuFanKui());
+        order.setTeShuYaoQiu(dto.getTeShuYaoQiu());
+        order.setKongZhiFangFa(dto.getKongZhiFangFa());
+        order.setDingDanTeBieShuoMing(dto.getDingDanTeBieShuoMing());
+        order.setYangPinPingShenXinXi(dto.getYangPinPingShenXinXi());
+        order.setDingDanPingShenXinXi(dto.getDingDanPingShenXinXi());
+
+        order.setYeWuRiqi(parseDateTime(dto.getYeWuRiqi()));
+        order.setShenHeRiqi(parseDateTime(dto.getShenHeRiqi()));
+        order.setDaYinRiqi(parseDateTime(dto.getDaYinRiqi()));
+
         order.setGuigeGaoMm(dto.getGuigeGaoMm());
         order.setGuigeKuanMm(dto.getGuigeKuanMm());
         order.setGuigeHouMm(dto.getGuigeHouMm());

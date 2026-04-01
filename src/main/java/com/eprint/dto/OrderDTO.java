@@ -47,6 +47,21 @@ public class OrderDTO {
     private Integer chuYangShuoMing;
     private Integer chuHuoShuLiang;
 
+    // 额外对齐字段
+    private String fenBanShuoMing2;
+    private String yinShuaGenSeYaoQiu;
+    private String zhuangDingShouGongYaoQiu;
+    private String qiTa;
+    private String keHuFanKui;
+    private String teShuYaoQiu;
+    private String kongZhiFangFa;
+    private String dingDanTeBieShuoMing;
+    private String yangPinPingShenXinXi;
+    private String dingDanPingShenXinXi;
+    private String yeWuRiqi;
+    private String shenHeRiqi;
+    private String daYinRiqi;
+
     private Double guigeGaoMm;
     private Double guigeKuanMm;
     private Double guigeHouMm;

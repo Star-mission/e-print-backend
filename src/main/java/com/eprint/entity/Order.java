@@ -248,6 +248,31 @@ public class Order {
      */
     private String qiTaShiBie;
 
+    @Column(length = 1000)
+    private String fenBanShuoMing2;
+    @Column(length = 1000)
+    private String yinShuaGenSeYaoQiu;
+    @Column(length = 1000)
+    private String zhuangDingShouGongYaoQiu;
+    @Column(length = 1000)
+    private String qiTa;
+    @Column(length = 1000)
+    private String keHuFanKui;
+    @Column(length = 1000)
+    private String teShuYaoQiu;
+    @Column(length = 1000)
+    private String kongZhiFangFa;
+    @Column(length = 1000)
+    private String dingDanTeBieShuoMing;
+    @Column(length = 1000)
+    private String yangPinPingShenXinXi;
+    @Column(length = 1000)
+    private String dingDanPingShenXinXi;
+
+    private LocalDateTime yeWuRiqi;
+    private LocalDateTime shenHeRiqi;
+    private LocalDateTime daYinRiqi;
+
     /**
      * 打印人
      */
