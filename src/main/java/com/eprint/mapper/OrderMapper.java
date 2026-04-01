@@ -168,7 +168,12 @@ public class OrderMapper {
     private java.time.LocalDateTime parseDateTime(String dateStr) {
         if (dateStr == null || dateStr.isEmpty()) return null;
         try {
+            // 处理 YYYY-MM-DD
             if (dateStr.length() == 10) return java.time.LocalDate.parse(dateStr).atStartOfDay();
+            // 处理 YYYY-MM-DD HH:mm:ss (将空格替换为 T 以符合 ISO 格式)
+            if (dateStr.contains(" ")) {
+                dateStr = dateStr.replace(" ", "T");
+            }
             return java.time.LocalDateTime.parse(dateStr);
         } catch (Exception e) {
             return null;

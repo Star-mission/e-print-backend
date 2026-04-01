@@ -78,18 +78,28 @@ public class OrderController {
     @PostMapping(value = {"/", "/create"}, consumes = "multipart/form-data")
     public ResponseEntity<OrderDTO> createOrder(
             @RequestParam("orderData") String jsonData,
-            @RequestParam(value = "isDraft", defaultValue = "false") boolean isDraft,
+            @RequestParam(value = "isDraft", required = false) Boolean isDraft,
+            @RequestParam(value = "salesman", required = false) String salesman,
             @RequestParam(value = "files", required = false) List<MultipartFile> files) {
 
         try {
-            log.info("Received order creation request");
+            log.info("Received order creation request from salesman: {}", salesman);
             // 将 JSON 字符串反序列化为 OrderDTO 对象
             OrderDTO orderDTO = objectMapper.readValue(jsonData, OrderDTO.class);
+
+            // 智能判断是否为草稿：优先取参数，参数没有则看 DTO 里的状态
+            boolean actuallyDraft = false;
+            if (isDraft != null) {
+                actuallyDraft = isDraft;
+            } else if (orderDTO.getOrderstatus() != null) {
+                actuallyDraft = "草稿".equals(orderDTO.getOrderstatus()) || "DRAFT".equalsIgnoreCase(orderDTO.getOrderstatus());
+            }
+
             // 调用业务逻辑层处理订单
-            OrderDTO result = orderService.createOrder(orderDTO, isDraft, files);
+            OrderDTO result = orderService.createOrder(orderDTO, actuallyDraft, files);
             return ResponseEntity.ok(result);
         } catch (Exception e) {
-            log.error("Error creating order", e);
+            log.error("Error creating order: {}", e.getMessage(), e);
             return ResponseEntity.badRequest().build();
         }
     }
