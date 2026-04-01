@@ -29,6 +29,7 @@ public class OrderMapper {
         dto.setProductName(order.getProductName());
         dto.setCustomerPO(order.getCustomerPO());
         dto.setJiuBianMa(order.getJiuBianMa());
+        dto.setQiTaShiBie(order.getQiTaShiBie());
         dto.setIsbn(order.getIsbn());
 
         dto.setDingDanShuLiang(order.getDingDanShuLiang());
@@ -91,6 +92,7 @@ public class OrderMapper {
         order.setProductName(dto.getProductName());
         order.setCustomerPO(dto.getCustomerPO());
         order.setJiuBianMa(dto.getJiuBianMa());
+        order.setQiTaShiBie(dto.getQiTaShiBie());
         order.setIsbn(dto.getIsbn());
 
         order.setDingDanShuLiang(dto.getDingDanShuLiang());

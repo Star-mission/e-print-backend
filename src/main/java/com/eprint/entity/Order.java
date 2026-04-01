@@ -244,6 +244,11 @@ public class Order {
     private String jiuBianMa;
 
     /**
+     * 其他识别
+     */
+    private String qiTaShiBie;
+
+    /**
      * 打印人
      */
     private String daYinRen;

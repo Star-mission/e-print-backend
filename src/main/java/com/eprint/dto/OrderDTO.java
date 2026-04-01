@@ -24,6 +24,7 @@ public class OrderDTO {
     private String chanPinDaLei;
     private String ziLeiXing;
     private String jiuBianMa;
+    private String qiTaShiBie;
     private String fscType;
     private String fenBanShuoMing;
     private String baoLiuQianSe;
