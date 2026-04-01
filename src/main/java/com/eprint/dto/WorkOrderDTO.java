@@ -1,10 +1,12 @@
 package com.eprint.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class WorkOrderDTO {
 
     private String work_id;
