@@ -239,6 +239,11 @@ public class Order {
     private String shenHeRen;
 
     /**
+     * 旧编码
+     */
+    private String jiuBianMa;
+
+    /**
      * 打印人
      */
     private String daYinRen;
