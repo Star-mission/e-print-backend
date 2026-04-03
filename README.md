@@ -4,6 +4,57 @@
 
 ## 快速启动 🚀
 
+### 当前推荐启动方式（2026-04-03 更新）
+
+**前置要求：**
+- JDK 17+
+- Maven 3.6+
+- Docker Desktop（用于 MySQL 数据库）
+
+**完整启动步骤：**
+
+1. **启动 MySQL 数据库**
+```bash
+cd /Users/openclaw/code/E_print_backend_java
+docker-compose up -d
+docker-compose ps  # 确认数据库已启动
+```
+
+2. **启动后端服务**
+```bash
+cd /Users/openclaw/code/E_print_backend_java
+mvn spring-boot:run
+```
+
+应用将在 `http://localhost:3000` 启动
+
+**特性说明：**
+- ✅ 启动时自动清理旧日志文件（`./logs/eprint.log`）
+- ✅ 已禁用金蝶和黑湖的外部 API 调用（避免启动时连接错误）
+- ✅ 关键接口增加了详细日志，方便问题排查
+- ✅ 自动创建/更新数据库表结构
+
+**查看日志：**
+```bash
+# 实时查看应用日志
+tail -f ./logs/eprint.log
+
+# 查看启动日志
+tail -100 ./logs/eprint.log
+```
+
+**停止服务：**
+```bash
+# 停止后端（Ctrl + C 或）
+lsof -ti :3000 | xargs kill -9
+
+# 停止数据库
+docker-compose down
+
+# 停止数据库并删除数据
+docker-compose down -v
+```
+
 ### 方式一：使用 Docker（推荐）
 
 **前置要求：**
@@ -73,120 +124,106 @@ mvn spring-boot:run
 
 应用将在 `http://localhost:3000` 启动
 
-### 黑湖（Blacklake）Token 说明
+### 黑湖（Blacklake）和金蝶（Kingdee）Token 说明
 
-系统启动时会自动调用黑湖登录接口获取 token，并将结果写入 MySQL 的 `external_tokens` 表，供后续黑湖相关接口复用。
+**当前状态：已禁用**
 
-默认配置位置：
-- 服务实现：`src/main/java/com/eprint/sdk/blacklake/BlacklakeTokenService.java`
-- 环境变量示例：`.env.example`
+为了避免启动时的外部 API 连接错误，已临时禁用了黑湖和金蝶的 token 自动刷新功能。
 
-默认对接参数：
-- Base URL：`https://liteweb.blacklake.cn`
-- Login Path：`/api/user/v1/users/_login`
-- 环境变量：`BLACKLAKE_PHONE`、`BLACKLAKE_PASSWORD`
+相关文件：
+- `src/main/java/com/eprint/sdk/blacklake/BlacklakeTokenService.java` - 黑湖 token 服务（已禁用 @Component）
+- `src/main/java/com/eprint/sdk/blacklake/BlacklakeProcessSyncRunner.java` - 黑湖流程同步（已禁用 @Component）
+- `src/main/java/com/eprint/sdk/kingdee/KingdeeTokenRefreshRunner.java` - 金蝶 token 刷新（已禁用 @Component）
 
-刷新时机：
-- 应用启动后立即刷新一次
-- 之后按 `external.token.refresh-interval-ms` 定时刷新
+如需启用，请：
+1. 取消相关类上的 `@Component` 注释
+2. 配置相应的环境变量（见下方）
+3. 重新编译启动
 
-如果未配置 `BLACKLAKE_PHONE` 或 `BLACKLAKE_PASSWORD`，本次 token 刷新会失败，但不会阻止后端服务启动。
+**黑湖配置（如需启用）：**
+```bash
+export BLACKLAKE_PHONE="你的手机号"
+export BLACKLAKE_PASSWORD="你的密码"
+```
 
-### 金蝶星辰（Kingdee）app-token 说明
+**金蝶配置（如需启用）：**
+```bash
+export KINGDEE_CLIENT_ID="你的client_id"
+export KINGDEE_CLIENT_SECRET="你的client_secret"
+export KINGDEE_APP_KEY="你的app_key"
+export KINGDEE_APP_SECRET="你的app_secret"
+```
 
-系统启动时会自动调用金蝶星辰接口获取 `app-token`，并将结果写入 MySQL 的 `external_tokens` 表（`provider=kingdee`），与 Blacklake token 共存。
+### 日志管理
 
-接口来源：
-- Base URL：`https://api.kingdee.com`
-- Token Path：`/jdyconnector/app_management/kingdee_auth_token`
+**日志文件位置：** `./logs/eprint.log`
 
-默认配置位置：
-- 服务实现：`src/main/java/com/eprint/sdk/kingdee/KingdeeTokenService.java`
-- 启动即刷新：`src/main/java/com/eprint/sdk/kingdee/KingdeeTokenRefreshRunner.java`
-- 定时刷新：`src/main/java/com/eprint/sdk/kingdee/KingdeeTokenScheduler.java`
-- 环境变量示例：`.env.example`
+**日志特性：**
+- 每次启动自动清理旧日志（由 `LogCleanupRunner` 实现）
+- 关键操作都有详细日志记录
+- 日志级别：DEBUG（开发环境）
 
-所需环境变量：
-- `KINGDEE_CLIENT_ID`
-- `KINGDEE_CLIENT_SECRET`
-- `KINGDEE_APP_KEY`
-- `KINGDEE_APP_SECRET`
+**查看日志命令：**
+```bash
+# 实时查看
+tail -f ./logs/eprint.log
 
-刷新时机：
-- 应用启动后立即刷新一次
-- 之后每 12 小时定时刷新（默认 43200000ms，可用 `KINGDEE_TOKEN_REFRESH_INTERVAL_MS` 临时调整）
+# 查看最近 100 行
+tail -100 ./logs/eprint.log
 
-如果缺失任意 Kingdee 配置，本次 token 刷新会失败，但不会阻止后端服务启动。
+# 搜索错误
+grep -i "error\|exception" ./logs/eprint.log
+
+# 查看订单相关日志
+grep "订单" ./logs/eprint.log
+
+# 查看工单相关日志
+grep "工单" ./logs/eprint.log
+```
 
 ### 后端启动命令（可直接复制）
 
-#### 1. 切换到 JDK 17
+### 常用启动命令
+
+#### 1. 标准启动（推荐）
 ```bash
-export JAVA_HOME="/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home"
-export PATH="$JAVA_HOME/bin:$PATH"
-java -version
-mvn -v
+cd /Users/openclaw/code/E_print_backend_java
+mvn spring-boot:run
 ```
 
-#### 2. 启动数据库（如使用 Docker）
+#### 2. 后台启动
 ```bash
-cd "/Users/openclaw/code/E_print_backend_java"
-docker-compose up -d
-docker-compose ps
+cd /Users/openclaw/code/E_print_backend_java
+mvn spring-boot:run > /tmp/spring-boot.log 2>&1 &
 ```
 
-#### 3. 编译项目
+#### 3. 清理并重新编译启动
 ```bash
-cd "/Users/openclaw/code/E_print_backend_java"
+cd /Users/openclaw/code/E_print_backend_java
 mvn clean compile
+mvn spring-boot:run
 ```
 
-#### 4. 带 Kingdee 配置启动开发环境
+#### 4. 停止后端服务
 ```bash
-cd "/Users/openclaw/code/E_print_backend_java" && \
-export JAVA_HOME="/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home" && \
-export PATH="$JAVA_HOME/bin:$PATH" && \
-KINGDEE_CLIENT_ID="你的client_id" \
-KINGDEE_CLIENT_SECRET="你的client_secret" \
-KINGDEE_APP_KEY="你的app_key" \
-KINGDEE_APP_SECRET="你的app_secret" \
-mvn spring-boot:run -Dspring-boot.run.profiles=dev
+# 方式1：查找并停止
+lsof -ti :3000 | xargs kill -9
+
+# 方式2：如果知道进程ID
+kill <PID>
 ```
 
-如果还需要同时验证 Blacklake，可一并传入：
+#### 5. 检查服务状态
 ```bash
-cd "/Users/openclaw/code/E_print_backend_java" && \
-export JAVA_HOME="/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home" && \
-export PATH="$JAVA_HOME/bin:$PATH" && \
-KINGDEE_CLIENT_ID="你的client_id" \
-KINGDEE_CLIENT_SECRET="你的client_secret" \
-KINGDEE_APP_KEY="你的app_key" \
-KINGDEE_APP_SECRET="你的app_secret" \
-BLACKLAKE_PHONE="你的手机号" \
-BLACKLAKE_PASSWORD="你的密码" \
-mvn spring-boot:run -Dspring-boot.run.profiles=dev
-```
+# 检查端口是否被占用
+lsof -i :3000
 
-#### 5. 查询 external_tokens 表确认落库
-```bash
-mysql -u eprint -peprint123 -D E_Bench -e "SELECT provider, LENGTH(token) AS token_length, fetched_at, updated_at FROM external_tokens WHERE provider='kingdee';"
-```
+# 测试服务是否响应
+curl http://localhost:3000/
 
-#### 6. 临时把定时刷新改为 60 秒验证
-```bash
-cd "/Users/openclaw/code/E_print_backend_java" && \
-export JAVA_HOME="/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home" && \
-export PATH="$JAVA_HOME/bin:$PATH" && \
-KINGDEE_CLIENT_ID="你的client_id" \
-KINGDEE_CLIENT_SECRET="你的client_secret" \
-KINGDEE_APP_KEY="你的app_key" \
-KINGDEE_APP_SECRET="你的app_secret" \
-KINGDEE_TOKEN_REFRESH_INTERVAL_MS=60000 \
-KINGDEE_TOKEN_SCHEDULE_INITIAL_DELAY_MS=60000 \
-mvn spring-boot:run -Dspring-boot.run.profiles=dev
+# 查看进程
+ps aux | grep java | grep eprint
 ```
-
-验证完成后恢复默认值 `43200000`。
 
 ---
 
