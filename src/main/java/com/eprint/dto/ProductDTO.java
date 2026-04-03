@@ -1,5 +1,6 @@
 package com.eprint.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
@@ -12,6 +13,7 @@ public class ProductDTO {
     private Double unitPrice;
     private Double totalPrice;
     private String notes;
+    private String beiZhu;  // 备注字段
 
     // 对齐前端 IProduct 字段
     private String neiWen;
@@ -21,6 +23,8 @@ public class ProductDTO {
     private String chanDi;
     private String pinPai;
     private String zhiLei;
+
+    @JsonProperty("FSC")
     private String FSC;
     private Integer yeShu;
     private String yinSe;

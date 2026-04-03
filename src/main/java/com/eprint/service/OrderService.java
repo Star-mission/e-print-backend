@@ -94,7 +94,8 @@ public class OrderService {
      */
     @Transactional  // 开启事务，确保数据一致性
     public OrderDTO createOrder(OrderDTO orderDTO, boolean isDraft, List<MultipartFile> files) {
-        log.info("Creating order: {}", orderDTO.getOrder_id());
+        log.info("=== OrderService.createOrder 开始 ===");
+        log.info("订单号: {}, 是否草稿: {}", orderDTO.getOrder_id(), isDraft);
 
         Order order;
         boolean isUpdate = false;
@@ -102,57 +103,71 @@ public class OrderService {
         String orderId = orderDTO.getOrder_id();
 
         if (orderId != null && !orderId.isEmpty()) {
+            log.info("使用已有订单号: ", orderId);
             // 按订单号查找已有订单（不含版本号）
             Optional<Order> existingOpt = orderRepository.findByOrderNumberAndIsDeletedNot(orderId, "是");
 
             if (existingOpt.isEmpty()) {
                 // 情况1：库里没有，直接创建，版本号为1
+                log.info("订单不存在，创建新订单，版本号=1");
                 order = new Order();
                 order.setOrderNumber(orderId);
                 order.setOrderVer(1);
             } else {
                 Order existing = existingOpt.get();
                 Order.OrderStatus existingStatus = existing.getStatus();
+                log.info("找到已有订单，当前状态: {}, 版本号: {}", existingStatus, existing.getOrderVer());
 
                 if (existingStatus == Order.OrderStatus.驳回) {
                     // 情况2.1：订单被拒绝，覆盖原订单，版本号重置为1
+                    log.info("订单已驳回，覆盖原订单，版本号重置为1");
                     order = existing;
                     order.setOrderVer(1);
                     isUpdate = true;
                 } else if (existingStatus == Order.OrderStatus.通过
                         || existingStatus == Order.OrderStatus.生产中) {
                     // 情况2.2：订单已通过或生产中，新建版本号+1
+                    int newVer = existing.getOrderVer() != null ? existing.getOrderVer() + 1 : 2;
+                    log.info("订单已通过/生产中，创建新版本: {}", newVer);
                     order = new Order();
                     order.setOrderNumber(orderId);
-                    order.setOrderVer(existing.getOrderVer() != null ? existing.getOrderVer() + 1 : 2);
+                    order.setOrderVer(newVer);
                 } else {
                     // 其他状态（草稿、待审核等）：直接覆盖
+                    log.info("订单状态为 {}，直接覆盖", existingStatus);
                     order = existing;
                     isUpdate = true;
                 }
             }
         } else {
             // 未提供订单号，自动生成
+            String newOrderNumber = generateOrderNumber();
+            log.info("自动生成订单号: {}", newOrderNumber);
             order = new Order();
-            order.setOrderNumber(generateOrderNumber());
+            order.setOrderNumber(newOrderNumber);
             order.setOrderVer(1);
         }
 
         // 将 DTO 数据映射到实体对象
+        log.debug("映射 DTO 数据到实体");
         orderMapper.updateOrderFromDTO(orderDTO, order);
 
         // 设置订单状态
         if (isDraft) {
             order.setStatus(Order.OrderStatus.草稿);
+            log.info("设置订单状态: 草稿");
         } else {
             order.setStatus(Order.OrderStatus.待审核);
+            log.info("设置订单状态: 待审核");
         }
 
         // 生成/更新订单唯一标识
         order.setOrderUnique(order.getOrderNumber() + "_" + order.getOrderVer());
+        log.info("订单唯一标识: {}", order.getOrderUnique());
 
         // 处理上传的附件文件
         if (files != null && !files.isEmpty()) {
+            log.info("处理 {} 个附件文件", files.size());
             for (MultipartFile file : files) {
                 // 存储文件并创建文档记录
                 Document doc = fileStorageService.storeFile(file, Document.DocumentCategory.OrderAttachment);
@@ -292,14 +307,22 @@ public class OrderService {
      */
     @Transactional
     public OrderDTO updateOrderStatus(String orderUnique, String statusText, String auditorName) {
-        log.info("Updating order status: {} to {}", orderUnique, statusText);
+        log.info("=== 更新订单状态开始 ===");
+        log.info("订单唯一标识: {}", orderUnique);
+        log.info("目标状态: {}", statusText);
+        log.info("审核员: {}", auditorName);
 
         // 查找订单
         Order order = orderRepository.findByOrderUnique(orderUnique)
-                .orElseThrow(() -> new RuntimeException("Order not found: " + orderUnique));
+                .orElseThrow(() -> {
+                    log.error("订单不存在: {}", orderUnique);
+                    return new RuntimeException("Order not found: " + orderUnique);
+                });
 
         // 记录旧状态
         Order.OrderStatus oldStatus = order.getStatus();
+        log.info("当前状态: {}", oldStatus);
+
         Order.OrderStatus newStatus = Order.OrderStatus.valueOf(statusText);
 
         // 更新状态
@@ -309,9 +332,12 @@ public class OrderService {
         }
 
         // 保存到数据库
+        log.info("保存订单到数据库");
         Order savedOrder = orderRepository.save(order);
+        log.info("订单保存成功");
 
         // 记录审计日志
+        log.info("记录审计日志");
         createAuditLog(
                 "UPDATE_STATUS",
                 "订单状态已更新",
@@ -323,9 +349,17 @@ public class OrderService {
 
         // 如果订单状态变更为"通过"，自动创建工单
         if (newStatus == Order.OrderStatus.通过) {
-            workOrderService.createWorkOrderFromOrder(savedOrder);
+            log.info("订单已通过，开始自动创建工单");
+            try {
+                workOrderService.createWorkOrderFromOrder(savedOrder);
+                log.info("工单创建成功");
+            } catch (Exception e) {
+                log.error("工单创建失败: {}", e.getMessage(), e);
+                throw e;
+            }
         }
 
+        log.info("=== 更新订单状态完成 ===");
         return orderMapper.toDTO(savedOrder, getAuditLogs(savedOrder.getOrderNumber()));
     }
 

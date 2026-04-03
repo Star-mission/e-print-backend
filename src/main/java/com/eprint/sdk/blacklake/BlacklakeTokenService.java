@@ -152,7 +152,7 @@ public class BlacklakeTokenService {
 }
 
 @Slf4j
-@Component
+//@Component  // 暂时禁用黑湖 token 刷新功能
 @RequiredArgsConstructor
 class BlacklakeTokenRefreshRunner implements ApplicationRunner {
 

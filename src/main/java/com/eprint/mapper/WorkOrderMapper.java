@@ -109,8 +109,13 @@ public class WorkOrderMapper {
         line.setYiGouJianShu(dto.getYiGouJianShu());
         line.setHeadPUR(dto.getHead_PUR());
         line.setHeadOUT(dto.getHead_OUT());
-        line.setKaiShiShiJian(dto.getKaiShiRiQi() != null ? java.time.LocalDateTime.parse(dto.getKaiShiRiQi()) : null);
-        line.setJieShuShiJian(dto.getYuQiJieShu() != null ? java.time.LocalDateTime.parse(dto.getYuQiJieShu()) : null);
+
+        // 安全解析日期字符串，处理空字符串情况
+        line.setKaiShiShiJian(dto.getKaiShiRiQi() != null && !dto.getKaiShiRiQi().isEmpty()
+            ? java.time.LocalDateTime.parse(dto.getKaiShiRiQi()) : null);
+        line.setJieShuShiJian(dto.getYuQiJieShu() != null && !dto.getYuQiJieShu().isEmpty()
+            ? java.time.LocalDateTime.parse(dto.getYuQiJieShu()) : null);
+
         line.setDangQianJinDu(dto.getDangQianJinDu() != null ? dto.getDangQianJinDu().toString() : null);
         line.setNotes(dto.getNotes());
         return line;

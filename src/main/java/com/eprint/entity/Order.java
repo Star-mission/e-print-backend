@@ -248,25 +248,44 @@ public class Order {
      */
     private String qiTaShiBie;
 
-    @Column(length = 1000)
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String fenBanShuoMing2;
-    @Column(length = 1000)
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String yinShuaGenSeYaoQiu;
-    @Column(length = 1000)
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String zhuangDingShouGongYaoQiu;
-    @Column(length = 1000)
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String qiTa;
-    @Column(length = 1000)
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String keHuFanKui;
-    @Column(length = 1000)
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String teShuYaoQiu;
-    @Column(length = 1000)
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String kongZhiFangFa;
-    @Column(length = 1000)
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String dingDanTeBieShuoMing;
-    @Column(length = 1000)
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String yangPinPingShenXinXi;
-    @Column(length = 1000)
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String dingDanPingShenXinXi;
 
     private LocalDateTime yeWuRiqi;

@@ -7,7 +7,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
 @Slf4j
-@Component
+//@Component  // 暂时禁用金蝶 token 刷新功能
 @RequiredArgsConstructor
 public class KingdeeTokenRefreshRunner implements ApplicationRunner {
 

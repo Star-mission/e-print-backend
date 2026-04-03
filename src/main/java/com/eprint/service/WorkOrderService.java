@@ -40,7 +40,12 @@ public class WorkOrderService {
 
         if (workOrderDTO.getWork_unique() != null && !workOrderDTO.getWork_unique().isEmpty()) {
             workOrder = engineeringOrderRepository.findByWorkUnique(workOrderDTO.getWork_unique())
-                    .orElse(new EngineeringOrder());
+                    .orElseGet(() -> {
+                        EngineeringOrder newWorkOrder = new EngineeringOrder();
+                        newWorkOrder.setEngineeringOrderId(generateWorkOrderId());
+                        newWorkOrder.setWorkVer(1);
+                        return newWorkOrder;
+                    });
             if (workOrder.getId() != null) {
                 isUpdate = true;
             }
@@ -80,10 +85,16 @@ public class WorkOrderService {
 
     @Transactional
     public void createWorkOrderFromOrder(Order order) {
-        log.info("Auto-creating work order from approved order: {}", order.getOrderNumber());
+        log.info("=== 从订单自动创建工单开始 ===");
+        log.info("订单号: {}", order.getOrderNumber());
+        log.info("客户: {}", order.getCustomer());
+        log.info("产品: {}", order.getProductName());
 
         EngineeringOrder workOrder = new EngineeringOrder();
-        workOrder.setEngineeringOrderId(generateWorkOrderId());
+        String workOrderId = generateWorkOrderId();
+        log.info("生成工单号: {}", workOrderId);
+
+        workOrder.setEngineeringOrderId(workOrderId);
         workOrder.setWorkId(order.getOrderNumber());
         workOrder.setWorkVer(1);
         workOrder.setWorkUnique(workOrder.getWorkId() + "_" + workOrder.getWorkVer());
@@ -94,8 +105,11 @@ public class WorkOrderService {
         workOrder.setChuYangShu(order.getChuYangShuLiang());
         workOrder.setChaoBiLi(order.getChaoBiLiShuLiang());
 
+        log.info("保存工单到数据库 - workUnique: {}", workOrder.getWorkUnique());
         engineeringOrderRepository.save(workOrder);
+        log.info("工单保存成功");
 
+        log.info("记录审计日志");
         createAuditLog(
                 "AUTO_CREATE_WORK_ORDER",
                 "订单通过后自动创建工单",
@@ -104,6 +118,8 @@ public class WorkOrderService {
                 order.getOrderNumber(),
                 workOrder.getWorkUnique()
         );
+
+        log.info("=== 工单创建完成 ===");
     }
 
     @Transactional(readOnly = true)

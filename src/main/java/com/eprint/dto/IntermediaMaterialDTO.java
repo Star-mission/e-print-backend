@@ -1,5 +1,6 @@
 package com.eprint.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
@@ -11,6 +12,8 @@ public class IntermediaMaterialDTO {
     private String wuLiaoMingCheng; // 物料名称
     private String pinPai;          // 品牌
     private String caiLiaoGuiGe;    // 材料规格
+
+    @JsonProperty("FSC")
     private String FSC;
     private Integer kaiShu;         // 开数
     private String shangJiChiCun;   // 上机尺寸

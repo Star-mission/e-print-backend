@@ -83,9 +83,15 @@ public class OrderController {
             @RequestParam(value = "files", required = false) List<MultipartFile> files) {
 
         try {
-            log.info("Received order creation request from salesman: {}", salesman);
+            log.info("=== 开始创建订单 ===");
+            log.info("业务员: {}", salesman);
+            log.info("是否草稿: {}", isDraft);
+            log.info("附件数量: {}", files != null ? files.size() : 0);
+            log.debug("订单数据: {}", jsonData);
+
             // 将 JSON 字符串反序列化为 OrderDTO 对象
             OrderDTO orderDTO = objectMapper.readValue(jsonData, OrderDTO.class);
+            log.info("订单反序列化成功 - 客户: {}, 产品: {}", orderDTO.getCustomer(), orderDTO.getProductName());
 
             // 智能判断是否为草稿：优先取参数，参数没有则看 DTO 里的状态
             boolean actuallyDraft = false;
@@ -94,12 +100,17 @@ public class OrderController {
             } else if (orderDTO.getOrderstatus() != null) {
                 actuallyDraft = "草稿".equals(orderDTO.getOrderstatus()) || "DRAFT".equalsIgnoreCase(orderDTO.getOrderstatus());
             }
+            log.info("最终判定为草稿: {}", actuallyDraft);
 
             // 调用业务逻辑层处理订单
             OrderDTO result = orderService.createOrder(orderDTO, actuallyDraft, files);
+            log.info("订单创建成功 - 订单号: {}, 状态: {}", result.getOrder_id(), result.getOrderstatus());
+            log.info("=== 订单创建完成 ===");
             return ResponseEntity.ok(result);
         } catch (Exception e) {
-            log.error("Error creating order: {}", e.getMessage(), e);
+            log.error("=== 订单创建失败 ===");
+            log.error("错误类型: {}", e.getClass().getName());
+            log.error("错误信息: {}", e.getMessage(), e);
             return ResponseEntity.badRequest().build();
         }
     }
@@ -114,10 +125,12 @@ public class OrderController {
     @GetMapping("/findById")
     public ResponseEntity<OrderDTO> findById(@RequestParam("order_id") String orderId) {
         try {
+            log.info("查询订单 - order_id: {}", orderId);
             OrderDTO order = orderService.getOrderByUnique(orderId);
+            log.info("订单查询成功 - 客户: {}, 状态: {}", order.getCustomer(), order.getOrderstatus());
             return ResponseEntity.ok(order);
         } catch (Exception e) {
-            log.error("Error finding order by ID", e);
+            log.error("订单查询失败 - order_id: {}, 错误: {}", orderId, e.getMessage(), e);
             return ResponseEntity.notFound().build();
         }
     }
@@ -131,7 +144,9 @@ public class OrderController {
      */
     @GetMapping("/findBySales")
     public ResponseEntity<List<OrderDTO>> findBySales(@RequestParam("sales") String sales) {
+        log.info("查询业务员订单列表 - sales: {}", sales);
         List<OrderDTO> orders = orderService.getOrdersBySales(sales);
+        log.info("查询到 {} 条订单", orders.size());
         return ResponseEntity.ok(orders);
     }
 
