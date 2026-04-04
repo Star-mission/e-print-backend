@@ -83,6 +83,14 @@ public class WorkOrderService {
         return workOrderMapper.toDTO(savedWorkOrder, getAuditLogs(savedWorkOrder.getEngineeringOrderId()));
     }
 
+    /**
+     * 从订单自动创建工单（已废弃）
+     *
+     * @deprecated 此方法已不再使用。工程单创建已改为由前端在审核通过时手动创建。
+     *             前端通过 POST /api/workOrders/create 接口提交工程单数据。
+     *             保留此方法仅用于向后兼容或特殊场景。
+     */
+    @Deprecated
     @Transactional
     public void createWorkOrderFromOrder(Order order) {
         log.info("=== 从订单自动创建工单开始 ===");

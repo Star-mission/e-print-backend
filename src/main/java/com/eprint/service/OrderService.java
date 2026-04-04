@@ -347,16 +347,11 @@ public class OrderService {
                 newStatus.name()
         );
 
-        // 如果订单状态变更为"通过"，自动创建工单
+        // 订单通过后，工程单由前端通过 /workOrders/create 接口创建
         if (newStatus == Order.OrderStatus.通过) {
-            log.info("订单已通过，开始自动创建工单");
-            try {
-                workOrderService.createWorkOrderFromOrder(savedOrder);
-                log.info("工单创建成功");
-            } catch (Exception e) {
-                log.error("工单创建失败: {}", e.getMessage(), e);
-                throw e;
-            }
+            log.info("订单已通过，工程单将由前端创建");
+            // 注意：工程单创建逻辑已移至前端，通过 POST /api/workOrders/create 接口完成
+            // 这样可以让审核员在审核时同时填写工程单的详细信息
         }
 
         log.info("=== 更新订单状态完成 ===");
