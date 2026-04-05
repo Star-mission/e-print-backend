@@ -1,258 +1,302 @@
-# 数据库设计文档
+IOrder 订单的核心数据
+import { reactive } from 'vue'
+import { type IOrder, OrderStatus, formatYMD } from '@/types/order'
 
-## MySQL 数据库（E_Bench）
+/**
+ * 创建一个全字段初始化的 IOrder 对象
+ * 包含完整的嵌套数组对象：chanPinMingXi, auditLogs, attachments
+ * 注释格式：<变量类型> + <原注释>
+ */
+const createFullOrderTemplate = (): IOrder => {
+  return {
+    // ======== 必填字段 ========
+    order_id: 'ORD-20260201-001',           // string: 订单号
+    order_ver: 1,                        // number: 订单版本
+    order_unique: 'ORD-20260201-001_V1',      //string:后端的唯一索引，在提交order报审核的时候创建，是order_id+"_"+order_ver.
+    customer: '博文出版社',                  // string: 客户名称: 创建草稿时唯一需要明确的，这样就可以开始保存草稿了
+    sales: 'SALES-007-小李',                 // string: 业务员名称或者工号
+    audit: 'AUDIT-001-老王',                 // string: 审单员名称或者工号
 
----
+    // ======== 外销与CPSIA ========
+    cpcQueRen: true,                        // boolean: cpc确认
+    waixiaoFlag: true,                      // boolean: 是否外销
+    cpsiaYaoqiu: true,                      // boolean: cpsia要求
+    dingZhiBeiZhu: '需符合出口欧美标准纸张',    // string: 订纸备注
 
-### 表：orders（订单表）
+    // ======== 产品基本信息,分类及安全要求 ========
+    productName: '世界地图集-硬壳精装',        // string: 成品名称
+    jiuBianMa: 'OLD-MAP-2025',              // string: 旧编码
+    isbn: '978-7-5123-4567-8',              // string: ISBN
+    customerPO: 'PO-GLOBE-8899',            // string: 客户PO？
+    baoJiaDanHao: 'QUO-202601-05',          // string: 报价单号
+    xiLieDanMing: '地理百科系列',             // string: 系列单名
+    qiTaShiBie: '封套带镭射防伪',             // string: 其他识别
+    chanPinDaLei: '书籍',                   // string: 产品大类
+    ziLeiXing: '硬壳精装',                  // string: 子类型
+    fscType: 'FSC Mix 100%',                // string: FSC类型
+    fenBanShuoMing: '首批中文版 5000册',      // string: 分版说明
+    baoLiuQianSe: '是',                     // string: 是否要保留签色
 
-| 字段名 | 数据类型 | 允许空 | 键 | 默认值 | 额外信息 | 注释 |
-|--------|----------|--------|-----|--------|----------|------|
-| id | BIGINT | NO | PRI | NULL | AUTO_INCREMENT | 主键 |
-| order_number | VARCHAR(255) | NO | UNI | NULL | | 订单号（业务主键），格式：AUTO-时间戳-随机数 |
-| order_ver | INT | YES | | NULL | | 订单版本号，初始为1 |
-| order_unique | VARCHAR(255) | YES | UNI | NULL | | 唯一标识，格式：orderNumber_orderVer |
-| status | VARCHAR(50) | YES | | NULL | | 订单状态：草稿/待审核/通过/驳回/生产中/完成/取消 |
-| sales | VARCHAR(255) | YES | | NULL | | 业务员姓名 |
-| audit | VARCHAR(255) | YES | | NULL | | 审核员姓名 |
-| customer | VARCHAR(255) | YES | | NULL | | 客户名称 |
-| product_name | VARCHAR(255) | YES | | NULL | | 产品名称 |
-| customer_po | VARCHAR(255) | YES | | NULL | | 客户采购订单号 |
-| isbn | VARCHAR(255) | YES | | NULL | | ISBN编号（图书类产品）|
-| ding_dan_shu_liang | INT | YES | | NULL | | 订单数量 |
-| chu_yang_shu_liang | INT | YES | | NULL | | 出样数量 |
-| chao_bi_li_shu_liang | INT | YES | | NULL | | 超比例数量 |
-| guige_gao_mm | DOUBLE | YES | | NULL | | 规格高度（毫米）|
-| guige_kuan_mm | DOUBLE | YES | | NULL | | 规格宽度（毫米）|
-| guige_hou_mm | DOUBLE | YES | | NULL | | 规格厚度（毫米）|
-| fu_liao_shuo_ming | VARCHAR(2000) | YES | | NULL | | 辅料说明 |
-| wu_liao_shuo_ming | VARCHAR(2000) | YES | | NULL | | 物料说明 |
-| zhi_liang_yao_qiu | VARCHAR(2000) | YES | | NULL | | 质量要求 |
-| bei_zhu | VARCHAR(2000) | YES | | NULL | | 备注信息 |
-| ke_lai_xin_xi | VARCHAR(2000) | YES | | NULL | | 客来信息 |
-| xia_ziliaodai_riqi1 | DATETIME | YES | | NULL | | 下资料袋日期1 |
-| xia_ziliaodai_riqi2 | DATETIME | YES | | NULL | | 下资料袋日期2 |
-| yinzhang_riqi1 | DATETIME | YES | | NULL | | 印章日期1 |
-| yinzhang_riqi2 | DATETIME | YES | | NULL | | 印章日期2 |
-| jiao_huo_ri_qi1 | DATETIME | YES | | NULL | | 交货日期1 |
-| jiao_huo_ri_qi2 | DATETIME | YES | | NULL | | 交货日期2 |
-| ye_wu_dai_biao_fen_ji | VARCHAR(255) | YES | | NULL | | 业务代表分级 |
-| shen_he_ren | VARCHAR(255) | YES | | NULL | | 审核人 |
-| da_yin_ren | VARCHAR(255) | YES | | NULL | | 打印人 |
-| created_at | DATETIME | NO | | NULL | 自动设置 | 创建时间 |
-| updated_at | DATETIME | NO | | NULL | 自动更新 | 更新时间 |
+    // ======== 订单数量及产品规格 ========
+    dingDanShuLiang: 5000,                  // number: 订单数量
+    chuYangShuLiang: 2,                     // number: 出样数量
+    chaoBiLiShuLiang: 50,                   // number: 超比例数量
+    teShuLiuYangZhang: 5,                   // number: 特殊留样张
+    beiPinShuLiang: 20,                     // number: 备品数量
+    teShuLiuShuYang: 3,                     // number: 特殊留书样
+    zongShuLiang: 5080,                     // number: 总数量
+    chuYangShuoMing: 1,                     // number: 出样说明
+    zhuangDingFangShi: '圆脊锁线精装',         // string: 装订方式
+    guigeGaoMm: 297,                        // number: 规格：高
+    guigeKuanMm: 210,                       // number: 规格:宽
+    guigeHouMm: 35,                         // number: 规格：厚
+    genSeZhiShi: '跟客供数码样',              // string: 跟色指示
 
----
+    // ======== 排期信息和其他 ========
+    xiaZiliaodaiRiqiRequired: '2026-02-05', // string: 下资料袋要求
+    xiaZiliaodaiRiqiPromise: '2026-02-06',  // string: 下资料袋承诺
+    yinzhangRiqiRequired: '2026-02-10',     // string: 印章日期要求
+    yinzhangRiqiPromise: '2026-02-11',      // string: 印章日期承诺
+    zhepaiRiqiRequired: '2026-02-15',       // string: 折牌日期要求
+    zhepaiRiqiPromise: '2026-02-16',        // string: 折牌日期承诺
+    chuyangRiqiRequired: '2026-02-20',      // string: 出样日期要求
+    chuyangRiqiPromise: '2026-02-21',       // string: 出样日期承诺
+    chuHuoShuLiang: 5000,                   // number: 出货数量
+    chuHuoRiqiRequired: '2026-03-20',       // string: 出货日期要求
+    chuHuoRiqiPromise: '2026-03-25',        // string: 出货日期承诺
+    yongTu: '书店销售',                     // string: 用途
+    keLaiXinxi: 'FTP下载，路径/Upload/Map',  // string: 客来信息
 
-### 表：order_items（订单明细表）
+    // ======== 产品明细 (IProduct[]) ========
+    chanPinMingXi: [
+      {
+        neiWen: '内文P1-P300',               // string: 内文
+        yongZhiChiCun: '889 * 1194',        // string: 报价用纸尺寸
+        houDu: 0.12,                        // number: 厚度
+        keZhong: 128,                       // number: 克重
+        chanDi: '进口',                     // string: 产地
+        pinPai: '太空梭',                    // string: 品牌
+        zhiLei: '哑粉纸',                    // string: 纸类
+        FSC: 'FSC Certified',               // string: fsc
+        yeShu: 300,                         // number: 页数
+        yinSe: '4C * 4C',                   // string: 印色(正/反)
+        zhuanSe: '无',                       // string: 专色(正/反)
+        biaoMianChuLi: '过油',                // string: 表面处理
+        zhuangDingGongYi: '锁线',             // string: 装订工艺
+        beiZhu: '大面积蓝色，注意防刮花'         // string: 备注
+      }
+    ],
+    export enum OrderStatus {
+  DRAFT = '草稿',
+  PENDING_REVIEW = '待审核',
+  APPROVED = '通过',
+  REJECTED = '驳回',
+  IN_PRODUCTION = '生产中',
+  COMPLETED = '完成',
+  CANCELLED = '取消',
+}
+    // ======== 工艺说明与质量要求 ========
+    fuLiaoShuoMing: '蓝色丝带书签',           // string: 辅料说明
+    chanPinMingXiTeBieShuoMing: '无',        // string: 产品明细特别说明
+    fenBanShuoMing2: '无',                   // string: 分版说明
+    wuLiaoShuoMing: '封面3.0灰板',           // string: 物料说明
+    yinShuaGenSeYaoQiu: '追数码样95%',        // string: 印刷和跟色要求
+    zhuangDingShouGongYaoQiu: '手工贴环衬',     // string: 装订/手工
+    qiTa: '无',                             // string: 其他
+    zhiLiangYaoQiu: '符合出版社A类品控',       // string: 质量要求
+    keHuFanKui: '去年同类产品有脱胶现象',       // string: 客户反馈
+    teShuYaoQiu: '无',                       // string: 特殊要求
+    kongZhiFangFa: '全线QC抽检',              // string: 控制方法
+    dingDanTeBieShuoMing: '重点出口项目',       // string: 订单特别说明
+    yangPinPingShenXinXi: '白样已过',         // string: 样品评审信息
+    dingDanPingShenXinXi: '产能已锁定',        // string: 订单评审信息
 
-| 字段名 | 数据类型 | 允许空 | 键 | 默认值 | 额外信息 | 注释 |
-|--------|----------|--------|-----|--------|----------|------|
-| id | BIGINT | NO | PRI | NULL | AUTO_INCREMENT | 主键 |
-| order_id | BIGINT | NO | FK | NULL | | 外键，关联 orders.id |
-| product_name | VARCHAR(255) | YES | | NULL | | 产品名称 |
-| quantity | INT | YES | | NULL | | 数量 |
-| specification | VARCHAR(255) | YES | | NULL | | 规格 |
-| unit | VARCHAR(255) | YES | | NULL | | 单位 |
-| unit_price | DOUBLE | YES | | NULL | | 单价 |
-| total_price | DOUBLE | YES | | NULL | | 总价 |
-| notes | VARCHAR(1000) | YES | | NULL | | 备注 |
+    // ======== 签字流程 ========
+    yeWuDaiBiaoFenJi: '6688',                // string: 业务代表/分机
+    yeWuRiqi: formatYMD(new Date()),         // string: 业务日期
+    shenHeRen: 'AUDIT-001-老王',             // string: 审核人
+    shenHeRiqi: '2026-02-01',                // string: 审核日期
+    daYinRen: '系统自动生成',                 // string: 打印人
+    daYinRiqi: '',                           // string: 打印日期
 
----
+    // ======== 订单状态 ========
+    orderstatus: OrderStatus.APPROVED,       // OrderStatus: 订单状态
 
-### 表：engineering_orders（工程单表）
+    // ======== 审批日志 (IAuditLog[]) ========
+    auditLogs: [
+      {
+        time: '2026-02-01 08:30:00',         // string: 记录时间
+        operator: 'SALES-007-小李',           // string: 业务员或者审核人，后期以工号替代
+        action: 'submit',                    // string: 操作动作
+        comment: '初始订单提交，已核对规格'       // string: 备注
+      },
+      {
+        time: '2026-02-01 10:15:00',
+        operator: 'AUDIT-001-老王',
+        action: 'approve',
+        comment: '核对纸张FSC认证通过，准予生产'   // 模拟审核通过备注
+      }
+    ],
 
-| 字段名 | 数据类型 | 允许空 | 键 | 默认值 | 额外信息 | 注释 |
-|--------|----------|--------|-----|--------|----------|------|
-| id | BIGINT | NO | PRI | NULL | AUTO_INCREMENT | 主键 |
-| engineering_order_id | VARCHAR(255) | NO | UNI | NULL | | 工程单业务主键 |
-| work_id | VARCHAR(255) | YES | | NULL | | 工程单号，格式：order_id+_W |
-| work_ver | INT | YES | | NULL | | 版本号，与订单版本相同 |
-| work_unique | VARCHAR(255) | YES | UNI | NULL | idx_work_unique | 唯一索引，格式：work_id_work_ver |
-| review_status | VARCHAR(50) | YES | | NULL | | 状态：草稿/待审核/通过/驳回/生产中/完成/取消 |
-| work_clerk | VARCHAR(255) | YES | | NULL | | 制单员名称或工号 |
-| work_audit | VARCHAR(255) | YES | | NULL | | 审核员名称或工号 |
-| ke_hu | VARCHAR(255) | YES | | NULL | | 客户名称 |
-| po | VARCHAR(255) | YES | | NULL | | 客户PO |
-| cheng_pin_ming_cheng | VARCHAR(255) | YES | | NULL | | 产品名称 |
-| chu_yang_shu | INT | YES | | NULL | | 出样数量 |
-| chao_bi_li | INT | YES | | NULL | | 超比例数量 |
-| zhuang_ding_jian_shu | INT | YES | | NULL | | 已装订件数（用于计算装订进度）|
-| head_mnf | VARCHAR(255) | YES | | NULL | | 生产装订负责人 |
-| bei_zhu | VARCHAR(2000) | YES | | NULL | | 备注 |
-| created_at | DATETIME | NO | | NULL | 自动设置 | 创建时间 |
-| updated_at | DATETIME | NO | | NULL | 自动更新 | 更新时间 |
+    // ======== 附件条目 (IAttachment[]) ========
+    attachments: [
+      {
+        category: '客户原稿',                 // string: 附件分类
+        fileName: 'world_map_v1_print.pdf',  // string: 文件名
+        url: 'https://storage.eprint.com/ord001/origin.pdf' // string: 可选：用于查看阶段的服务器下载链接
+      },
+      {
+        category: '签样照',
+        fileName: 'customer_signed_sample.jpg',
+        url: 'https://storage.eprint.com/ord001/sample.jpg'
+      }
+    ]
+  }
+}
 
----
+// 在 Vue 中使用
+const orderData = reactive<IOrder>(createFullOrderTemplate())
+IWorkOrder 工程单的核心数据
+import { reactive } from 'vue'
+import { type IWorkOrder, OrderStatus, formatYMD } from '@/types/workorder'
 
-### 表：engineering_order_material_lines（工序物料表）
+/**
+ * 创建一个全字段初始化的 IWorkOrder 对象
+ * 包含完整的嵌套数组对象：intermedia, auditLogs, attachments
+ * 注释格式：<变量类型> + <原注释>
+ */
+const createFullWorkOrderTemplate = (): IWorkOrder => {
+  return {
+    // ======== 基础信息 ========
+    work_id: 'ORD-20260201-001_W',                // string: 工程单号，在order通过审核时自动创建，order_id+"_W"
+    work_ver: 1,                         // number: 版本号，和order_ver相同
+    work_unique:'ORD-20260201-001_W_V1'//string:后端唯一索引，在order通过审核时自动创建,是work_id+"_"+work_ver.
+    work_clerk: 'CZ001-王小美',              // string: 制单员名称或者工号
+    work_audit: 'SH005-张经理',              // string: 工程单审核员名称或者工号
+    gongDanLeiXing: '翻单',                  // string: 工单类型
+    caiLiao: '250g哑粉纸',                  // string: 普通材料
+    chanPinLeiXing: '精品礼盒',               // string: 产品类型
+    zhiDanShiJian: '2026-02-01 10:30:00',   // string: 制单时间
+    customer: '环球贸易有限公司',             // string: 客户
+    customerPO: 'PO-HK-9921',               // string: 客户PO
+    productName: '奢华巧克力包装盒',           // string: 成品名称
+    chanPinGuiGe: '300 * 200 * 50 mm',      // string: 产品规格：似乎是页面大小
 
-| 字段名 | 数据类型 | 允许空 | 键 | 默认值 | 额外信息 | 注释 |
-|--------|----------|--------|-----|--------|----------|------|
-| id | BIGINT | NO | PRI | NULL | AUTO_INCREMENT | 主键 |
-| engineering_order_id | BIGINT | NO | FK | NULL | | 外键，关联 engineering_orders.id |
-| intermedia_index | INT | YES | | NULL | | 在 intermedia 数组中的索引位置 |
-| material_name | VARCHAR(255) | YES | | NULL | | 物料名称 |
-| specification | VARCHAR(255) | YES | | NULL | | 规格 |
-| quantity | INT | YES | | NULL | | 数量 |
-| unit | VARCHAR(255) | YES | | NULL | | 单位 |
-| kai_shi_shi_jian | DATETIME | YES | | NULL | | 工序开始时间 |
-| jie_shu_shi_jian | DATETIME | YES | | NULL | | 工序结束时间 |
-| dang_qian_jin_du | VARCHAR(255) | YES | | NULL | | 工序当前进度（外发进度）|
-| yi_gou_jian_shu | INT | YES | | NULL | | 已采购件数 |
-| head_pur | VARCHAR(255) | YES | | NULL | | 采购负责人 |
-| head_out | VARCHAR(255) | YES | | NULL | | 外发负责人 |
-| notes | VARCHAR(1000) | YES | | NULL | | 备注 |
+    // ======== 订单过继信息 ========
+    dingDanShuLiang: 10000,                 // number: 订单数量
+    chuYangShuLiang: 10,                    // number: 出样数量
+    chaoBiLiShuLiang: 100,                  // number: 超比例数量
+    benChangFangSun: '2.0%',                // string: 本厂放损
+    chuYangRiqiRequired: '2026-02-10',      // string: 出样日期要求
+    chuHuoRiqiRequired: '2026-03-15',       // string: 出货日期要求
+    workorderstatus: WorkOrderStatus.PENDING_REVIEW,// OrderStatus: 订单状态
+    zhuangDingJianShu: '26',//number: 已经装订件数，zhuangDingJianShu/dingDanShuLiang=装订进度
+    zhuangDingStart: '2026-04-01' //装订开始时间
+    zhuangDingEnd: '2026-04-03'//装订结束时间
+    head_MNF: 'Alice',//string: 该工单的生产负责人
+    // ======== 中间物料详单 (IIM[]) ========
+    intermedia: [
+      {
+        intermediaID: 0,                     //number: intermedia工序在这个工单里的序号
+        buJianMingCheng: '盒身',             // string: 部件名称
+        yinShuaYanSe: '5C+1C',              // string: 印刷颜色
+        wuLiaoMingCheng: '157g铜版纸裱2.0灰板', // string: 物料名称
+        pinPai: '万国',                     // string: 品牌
+        caiLiaoGuiGe: '787 * 1092',         // string: 材料规格
+        FSC: 'FSC Mix',                     // string: FSC
+        kaiShu: 4,                          // number: 开数
+        shangJiChiCun: '540 * 390',         // string: 上机尺寸
+        paiBanMuShu: 1,                     // number: 排版模数
+        yinChuShu: 10200,                   // number: 印出数
+        yinSun: 300,                        // number: 印损
+        lingLiaoShu: 10500,                 // number: 领料数（张）
+        biaoMianChuLi: '触感膜+局部UV',        // string: 表面处理
+        yinShuaBanShu: 6,                   // number: 印刷版数目
+        shengChanLuJing: '印刷-覆膜-V槽-糊盒',  // string: 生产路径
+        paiBanFangShi: '自翻'                // string: 排版方式
+        
+        //不在工程单申请上的，但是后期会渲染进度
+        yiGouJianShu: '25' //number：已经采购的件数，caiGouJianShu/lingLiaoShu=采购进度
+        head_PUR:'Marc'//string: 该工序的采购负责人 
+        kaiShiRiQi: '2026-02-01' //string：工序开始日期
+        yuQiJieShu: '2026-03-01'// string：工序预期结束日期
+        dangQianJinDu: '85%' //string: 工序当前进度，由技工手动输入
+        head_OUT: '张三' //string：该工序的外发负责人
+      }
+    ],
 
----
 
-### 表：documents（附件文档表）
+    // ======== 审批日志 (IAuditLog[]) ========
+    auditLogs: [
+      {
+        time: '2026-02-01 09:00:00',        // string: 记录时间
+        operator: 'CZ001-王小美',            // string: 业务员或者审核人，后期以工号替代
+        action: 'save_draft',               // string: 操作动作
+        comment: '保存草稿，等待附件上传'       // string: 备注
+      },
+      {
+        time: '2026-02-01 10:00:00',
+        operator: 'SH005-张经理',
+        action: 'reject',
+        comment: '放损比例填写过低，请核实后重交' // 模拟驳回备注
+      }
+    ],
 
-| 字段名 | 数据类型 | 允许空 | 键 | 默认值 | 额外信息 | 注释 |
-|--------|----------|--------|-----|--------|----------|------|
-| id | BIGINT | NO | PRI | NULL | AUTO_INCREMENT | 主键 |
-| file_name | VARCHAR(255) | YES | | NULL | | 文件名 |
-| file_path | VARCHAR(255) | YES | | NULL | | 文件存储路径 |
-| file_type | VARCHAR(255) | YES | | NULL | | 文件类型（MIME类型）|
-| file_size | BIGINT | YES | | NULL | | 文件大小（字节）|
-| category | VARCHAR(50) | YES | | NULL | | 分类：OrderAttachment / WorkOrderAttachment |
-| order_id | BIGINT | YES | FK | NULL | | 外键，关联 orders.id |
-| engineering_order_id | BIGINT | YES | FK | NULL | | 外键，关联 engineering_orders.id |
-| uploaded_at | DATETIME | NO | | NULL | 自动设置 | 上传时间 |
+    // ======== 附件条目 (IAttachment[]) ========
+    attachments: [
+      {
+        category: '设计稿',                  // string: 附件分类
+        fileName: 'chocolate_box_final.ai', // string: 文件名
+        url: 'http://cdn.eprint.com/files/ai/123.ai' // string: 可选：用于查看阶段的服务器下载链接
+      }
+      // 注意：file 对象通常在上传阶段由 input 赋值，初始化时一般为 undefined
+    ]
+  }
+}
+export enum WorkOrderStatus {
+  DRAFT = '草稿',
+  PENDING_REVIEW = '待审核',
+  APPROVED = '通过',
+  REJECTED = '驳回',
+  IN_PRODUCTION = '生产中',
+  COMPLETED = '完成',
+  CANCELLED = '取消',
+}
+// 在 Vue 中创建该全量响应式对象
+const workOrder = reactive<IWorkOrder>(createFullWorkOrderTemplate())
+IUser
+export interface IUser {
+  // ======== 基础账号信息 ========
+  userId: admin // string: 用户唯一标识符 (UUID或工号)
+  username: admin // string: 登录账号名
+  email: admin@admin.com // string: 电子邮箱
+  passwordHash: admin // string: 加密后的密码哈希值 (前端不存储明文)
+  fullName: admin // string: 用户真实姓名
+  isActive: True // boolean: 账号是否启用
 
----
+  // ======== 提交与审核权限 (流程控制) ========
+  order_submit: True // boolean: 订单提交权限 (业务员)
+  order_audit: True // boolean: 订单审核权限 (审单员/主管)
+  work_submit: True // boolean: 工程单提交权限 (制单员)
+  work_audit: True // boolean: 工程单审核权限 (工程主管)
 
-### 表：users（用户表）
+  // ======== 查看和修改权限 (模块准入) ========
+  order_check: True // boolean: 订单查看权限
+  work_check: True // boolean: 工程单查看权限
+  pmc_check: True // boolean: PMC(生产排期)查看权限
+  pmc_edit: True // boolean: PMC(生产排期)修改权限
 
-| 字段名 | 数据类型 | 允许空 | 键 | 默认值 | 额外信息 | 注释 |
-|--------|----------|--------|-----|--------|----------|------|
-| id | BIGINT | NO | PRI | NULL | AUTO_INCREMENT | 主键 |
-| user_id | VARCHAR(255) | NO | UNI | NULL | | 用户唯一标识符（UUID或工号）|
-| username | VARCHAR(255) | NO | UNI | NULL | idx_username | 登录账号名 |
-| email | VARCHAR(255) | NO | UNI | NULL | idx_email | 电子邮箱 |
-| password_hash | VARCHAR(255) | NO | | NULL | | 加密后的密码哈希值 |
-| full_name | VARCHAR(255) | NO | | NULL | | 用户真实姓名 |
-| is_active | TINYINT(1) | NO | | 1 | | 账号是否启用 |
-| order_submit | TINYINT(1) | NO | | 0 | | 订单提交权限（业务员）|
-| order_audit | TINYINT(1) | NO | | 0 | | 订单审核权限（审单员/主管）|
-| work_submit | TINYINT(1) | NO | | 0 | | 工程单提交权限（制单员）|
-| work_audit | TINYINT(1) | NO | | 0 | | 工程单审核权限（工程主管）|
-| order_check | TINYINT(1) | NO | | 0 | | 订单查看权限 |
-| work_check | TINYINT(1) | NO | | 0 | | 工程单查看权限 |
-| pmc_check | TINYINT(1) | NO | | 0 | | PMC生产排期查看权限 |
-| pmc_edit | TINYINT(1) | NO | | 0 | | PMC生产排期修改权限 |
-| delieve_check | TINYINT(1) | NO | | 0 | | 发货/出库记录查看权限 |
-| delieve_edit | TINYINT(1) | NO | | 0 | | 发货/出库单据编辑权限 |
-| is_sal | TINYINT(1) | NO | | 0 | | 是否能查看销售部页面 |
-| is_pur | TINYINT(1) | NO | | 0 | | 是否能查看采购部页面 |
-| is_out | TINYINT(1) | NO | | 0 | | 是否能查看外发部页面 |
-| is_mnf | TINYINT(1) | NO | | 0 | | 是否能查看生产部页面 |
-| is_adm | TINYINT(1) | NO | | 0 | | 是否能查看办公室页面 |
-| last_login | DATETIME | YES | | NULL | | 最后登录时间 |
-| created_at | DATETIME | NO | | NULL | 自动设置 | 创建时间 |
-| updated_at | DATETIME | NO | | NULL | 自动更新 | 更新时间 |
+  // ======== 查看和修改发货 (物流权限) ========
+  delieve_check: True // boolean: 发货/出库记录查看权限
+  delieve_edit: True // boolean: 发货/出库单据编辑权限
+  
+  isSAL: True //boolean: 是否能查看销售部页面
+  isPUR: True //boolean: 是否能查看采购部页面
+  isOUT: True //boolean: 是否能查看外发部页面
+  isMNF: True //boolean: 是否能查看生产部页面
+  isTRA: True //boolean: 是否能查看跟单页面
+  isADM: True //boolean: 是否能查看办公室页面
 
----
-
-## MongoDB 数据库（E_Bench_Logs）
-
----
-
-### 集合：audit_logs（审计日志集合）
-
-| 字段名 | 数据类型 | 索引 | 默认值 | 注释 |
-|--------|----------|------|--------|------|
-| _id | ObjectId | PRI | 自动生成 | MongoDB主键 |
-| action | String | IDX | NULL | 操作类型（如：CREATE_ORDER、UPDATE_STATUS）|
-| action_description | String | | NULL | 操作描述 |
-| user_id | String | IDX | NULL | 操作用户ID |
-| entity_type | String | IDX | NULL | 实体类型（Order / EngineeringOrder）|
-| entity_id | String | IDX | NULL | 实体业务主键 |
-| order_number | String | IDX | NULL | 订单号 |
-| old_value | String | | NULL | 变更前的值 |
-| new_value | String | | NULL | 变更后的值 |
-| ip_address | String | | NULL | 操作来源IP地址 |
-| time | DateTime | IDX | 创建时自动设置 | 操作时间 |
-
----
-
-## 接口与数据库数据流关系
-
----
-
-### 订单接口（/api/orders）
-
-| 接口 | 方法 | 请求参数 | 读写表 | 数据流说明 |
-|------|------|----------|--------|------------|
-| /api/orders/create | POST | `orderData`(JSON), `isDraft`(bool), `files`(multipart) | orders(W), order_items(W), documents(W), audit_logs(W) | 将 orderData 反序列化为 OrderDTO，写入 orders 及关联的 order_items、documents，同时在 MongoDB 写入创建日志 |
-| /api/orders/findById | GET | `order_id`(string) | orders(R), order_items(R), documents(R), audit_logs(R) | 按 order_unique 查询订单，返回含明细、附件、审计日志的完整 OrderDTO |
-| /api/orders/findBySales | GET | `sales`(string) | orders(R) | 按业务员姓名查询订单列表 |
-| /api/orders/findByAudit | GET | `audit`(string) | orders(R) | 按审核员姓名查询订单列表 |
-| /api/orders/status | GET | `orderstatus`(string) | orders(R) | 按订单状态查询订单列表 |
-| /api/orders/all | GET | 无 | orders(R) | 查询所有订单列表 |
-| /api/orders/updateStatus | POST | `order_unique`, `orderstatus`, `auditor` | orders(W), audit_logs(W) | 更新订单状态字段，同时在 MongoDB 写入状态变更日志 |
-| /api/orders/{id} | DELETE | `id`(path) | orders(W), order_items(W), documents(W), audit_logs(W) | 级联删除订单及其明细、附件，写入删除日志 |
-
----
-
-### 工程单接口（/api/workOrders）
-
-| 接口 | 方法 | 请求参数 | 读写表 | 数据流说明 |
-|------|------|----------|--------|------------|
-| /api/workOrders/create | POST | `workOrderJson`(JSON), `files`(multipart) | engineering_orders(W), engineering_order_material_lines(W), documents(W), audit_logs(W) | 将 workOrderJson 反序列化为 WorkOrderDTO，写入 engineering_orders 及关联的物料行、附件，写入创建日志 |
-| /api/workOrders/findById | GET | `work_unique`(string) | engineering_orders(R), engineering_order_material_lines(R), documents(R), audit_logs(R) | 按 work_unique 查询工程单，返回含物料行、附件、审计日志的完整 WorkOrderDTO |
-| /api/workOrders/findByClerk | GET | `work_clerk`(string) | engineering_orders(R) | 按制单员名称查询工程单列表 |
-| /api/workOrders/findByAudit | GET | `work_audit`(string) | engineering_orders(R) | 按审核员名称查询工程单列表 |
-| /api/workOrders/findWithStatus | GET | `workorderstatus`(string) | engineering_orders(R) | 按状态查询工程单列表 |
-| /api/workOrders/updateStatus | POST | `work_unique`, `workorderstatus` | engineering_orders(W), audit_logs(W) | 更新工程单状态，写入状态变更日志 |
-| /api/workOrders/updateProcess | POST | `work_id`, `process`, `dangQianJinDu` | engineering_order_material_lines(W), audit_logs(W) | 更新第一条物料行的当前进度，写入进度日志 |
-| /api/workOrders/addHeadPur | POST | `work_unique`, `intermediaID`, `head_PUR` | engineering_order_material_lines(W), audit_logs(W) | 按 intermediaID 索引到指定物料行，将 head_PUR 字段赋值为指定负责人，写入日志 |
-| /api/workOrders/addHeadOut | POST | `work_unique`, `intermediaID`, `head_OUT` | engineering_order_material_lines(W), audit_logs(W) | 按 intermediaID 索引到指定物料行，将 head_OUT 字段赋值为指定负责人，写入日志 |
-| /api/workOrders/addHeadMnf | POST | `work_unique`, `head_MNF` | engineering_orders(W), audit_logs(W) | 将工程单的 head_mnf 字段赋值为指定生产负责人，写入日志 |
-| /api/workOrders/updateProgressPur | POST | `work_unique`, `intermediaID`, `yiGouJianShu` | engineering_order_material_lines(W), audit_logs(W) | 按 intermediaID 索引到指定物料行，更新 yi_gou_jian_shu（已采购件数），写入日志 |
-| /api/workOrders/updateProgressOut | POST | `work_unique`, `intermediaID`, `kaiShiRiQi`, `yuQiJieShu`, `dangQianJinDu` | engineering_order_material_lines(W), audit_logs(W) | 按 intermediaID 索引到指定物料行，更新工序开始时间、结束时间、当前进度，写入日志 |
-| /api/workOrders/updateProgressMnf | POST | `work_unique`, `zhuangDingJianShu` | engineering_orders(W), audit_logs(W) | 更新工程单的 zhuang_ding_jian_shu（已装订件数），写入日志 |
-
----
-
-### 用户接口（/api/users）
-
-| 接口 | 方法 | 请求参数 | 读写表 | 数据流说明 |
-|------|------|----------|--------|------------|
-| /api/users/create | POST | 用户信息JSON + `passwordHash` | users(W) | 创建用户，校验用户名/邮箱唯一性后写入 users 表 |
-| /api/users/findByUsername | GET | `username`(string) | users(R) | 按用户名查询用户信息（不含密码哈希）|
-| /api/users/findByUserId | GET | `userId`(string) | users(R) | 按用户ID查询用户信息（不含密码哈希）|
-| /api/users/all | GET | 无 | users(R) | 查询所有用户列表 |
-| /api/users/update | POST | `userId` + 更新字段JSON | users(W) | 按 userId 查找用户，更新基础信息和权限字段 |
-| /api/users/{userId} | DELETE | `userId`(path) | users(W) | 按 userId 删除用户 |
-| /api/users/updateLastLogin | POST | `userId` | users(W) | 更新用户最后登录时间 |
-
----
-
-### 数据流图（文字描述）
-
-```
-前端
-  │
-  ├─ POST /orders/create ──────────────────► orders + order_items + documents
-  │                                                        │
-  │                                                        └─► audit_logs (MongoDB)
-  │
-  ├─ POST /orders/updateStatus ────────────► orders.status
-  │                                                        │
-  │                                                        └─► audit_logs (MongoDB)
-  │
-  ├─ POST /workOrders/create ─────────────► engineering_orders
-  │                                       ► engineering_order_material_lines
-  │                                       ► documents
-  │                                                        │
-  │                                                        └─► audit_logs (MongoDB)
-  │
-  ├─ POST /workOrders/addHeadPur/Out ─────► engineering_order_material_lines.head_pur/head_out
-  ├─ POST /workOrders/addHeadMnf ─────────► engineering_orders.head_mnf
-  ├─ POST /workOrders/updateProgressPur ──► engineering_order_material_lines.yi_gou_jian_shu
-  ├─ POST /workOrders/updateProgressOut ──► engineering_order_material_lines.dang_qian_jin_du
-  ├─ POST /workOrders/updateProgressMnf ──► engineering_orders.zhuang_ding_jian_shu
-  │
-  └─ POST /users/create ──────────────────► users
-```
+  // ======== 系统辅助字段 ========
+  lastLogin?: 2026-02-01 // string: 最后登录时间 (yyyy-mm-dd HH:mm:ss)
+}

@@ -8,7 +8,7 @@ import java.util.List;
 public class OrderDTO {
 
     private String order_id;
-    private String order_ver;  // 前端为 string 类型（如 "V1"）
+    private Integer order_ver;  // 版本号（1, 2, 3...）
     private String order_unique;
     private String orderstatus;
     private String sales;

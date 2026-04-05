@@ -33,35 +33,44 @@ public class WorkOrderService {
 
     @Transactional
     public WorkOrderDTO createWorkOrder(WorkOrderDTO workOrderDTO, List<MultipartFile> files) {
-        log.info("Creating work order: {}", workOrderDTO.getWork_id());
+        log.info("=== WorkOrderService.createWorkOrder 开始 ===");
+        log.info("work_id: {}, work_unique: {}", workOrderDTO.getWork_id(), workOrderDTO.getWork_unique());
 
         EngineeringOrder workOrder;
         boolean isUpdate = false;
 
         if (workOrderDTO.getWork_unique() != null && !workOrderDTO.getWork_unique().isEmpty()) {
+            log.info("使用已有工程单唯一标识: {}", workOrderDTO.getWork_unique());
             workOrder = engineeringOrderRepository.findByWorkUnique(workOrderDTO.getWork_unique())
                     .orElseGet(() -> {
+                        log.info("未找到已有工程单，创建新工程单");
                         EngineeringOrder newWorkOrder = new EngineeringOrder();
                         newWorkOrder.setEngineeringOrderId(generateWorkOrderId());
                         newWorkOrder.setWorkVer(1);
                         return newWorkOrder;
                     });
             if (workOrder.getId() != null) {
+                log.info("找到已有工程单，ID: {}", workOrder.getId());
                 isUpdate = true;
             }
         } else {
+            log.info("创建全新工程单");
             workOrder = new EngineeringOrder();
             workOrder.setEngineeringOrderId(generateWorkOrderId());
             workOrder.setWorkVer(1);
         }
 
+        log.info("开始映射 DTO 到 Entity");
         workOrderMapper.updateWorkOrderFromDTO(workOrderDTO, workOrder);
+        log.info("映射完成");
 
         if (workOrder.getWorkUnique() == null) {
             workOrder.setWorkUnique(workOrder.getWorkId() + "_" + workOrder.getWorkVer());
+            log.info("生成 work_unique: {}", workOrder.getWorkUnique());
         }
 
         if (files != null && !files.isEmpty()) {
+            log.info("处理 {} 个附件", files.size());
             for (MultipartFile file : files) {
                 Document doc = fileStorageService.storeFile(file, Document.DocumentCategory.WorkOrderAttachment);
                 doc.setEngineeringOrder(workOrder);
@@ -69,8 +78,11 @@ public class WorkOrderService {
             }
         }
 
+        log.info("保存工程单到数据库");
         EngineeringOrder savedWorkOrder = engineeringOrderRepository.save(workOrder);
+        log.info("工程单保存成功，ID: {}", savedWorkOrder.getId());
 
+        log.info("创建审计日志");
         createAuditLog(
                 isUpdate ? "UPDATE_WORK_ORDER" : "CREATE_WORK_ORDER",
                 isUpdate ? "工单已更新" : "工单已创建",

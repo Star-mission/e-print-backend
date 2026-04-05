@@ -8,7 +8,7 @@ import java.util.List;
 public class WorkOrderDTO {
 
     private String work_id;
-    private String work_ver;  // 前端为 string 类型（如 "V1"）
+    private Integer work_ver;  // 版本号（1, 2, 3...）
     private String work_unique;
     private String workorderstatus;
     private String work_clerk;
@@ -33,6 +33,8 @@ public class WorkOrderDTO {
 
     // 生产进度字段
     private Integer zhuangDingJianShu;  // 已装订件数
+    private String zhuangDingStart;  // 装订开始时间
+    private String zhuangDingEnd;  // 装订结束时间
     private String head_MNF;  // 生产负责人
 
     private String beiZhu;

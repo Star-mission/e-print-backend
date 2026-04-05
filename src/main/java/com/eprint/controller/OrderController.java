@@ -226,14 +226,100 @@ public class OrderController {
     @PostMapping("/updateStatus")
     public ResponseEntity<OrderDTO> updateStatus(@RequestBody Map<String, String> request) {
         try {
+            log.info("=== 开始更新订单状态 ===");
             String orderUnique = request.get("order_unique");
             String status = request.get("orderstatus");
             String auditor = request.get("auditor");
 
+            log.info("订单唯一标识: {}", orderUnique);
+            log.info("目标状态: {}", status);
+            log.info("审核员: {}", auditor);
+
             OrderDTO result = orderService.updateOrderStatus(orderUnique, status, auditor);
+            log.info("订单状态更新成功");
+            log.info("=== 订单状态更新完成 ===");
             return ResponseEntity.ok(result);
         } catch (Exception e) {
-            log.error("Error updating order status", e);
+            log.error("=== 订单状态更新失败 ===");
+            log.error("错误类型: {}", e.getClass().getName());
+            log.error("错误信息: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
+     * 添加审核员信息
+     * POST /api/orders/addAuditInfo
+     *
+     * 请求体（JSON）：
+     * {
+     *   "order_unique": "AUTO-123_1",
+     *   "audit": "李四",
+     *   "auditDate": "2024-01-01"
+     * }
+     *
+     * @param request 请求参数 Map
+     * @return 更新后的订单信息
+     */
+    @PostMapping("/addAuditInfo")
+    public ResponseEntity<OrderDTO> addAuditInfo(@RequestBody Map<String, String> request) {
+        try {
+            log.info("=== 开始添加审核员信息 ===");
+            String orderUnique = request.get("order_unique");
+            String audit = request.get("audit");
+            String auditDate = request.get("auditDate");
+
+            log.info("订单唯一标识: {}", orderUnique);
+            log.info("审核员: {}", audit);
+            log.info("审核日期: ", auditDate);
+
+            OrderDTO result = orderService.addAuditInfo(orderUnique, audit, auditDate);
+            log.info("审核员信息添加成功");
+            log.info("=== 添加审核员信息完成 ===");
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("=== 添加审核员信息失败 ===");
+            log.error("错误类型: {}", e.getClass().getName());
+            log.error("错误信息: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
+     * 添加审核日志
+     * POST /api/orders/addAuditLog
+     *
+     * 请求体（JSON）：
+     * {
+     *   "order_unique": "AUTO-123_1",
+     *   "auditLogs": {
+     *     "operator": "李四",
+     *     "action": "审核通过",
+     *     "comment": "符合要求"
+     *   }
+     * }
+     *
+     * @param request 请求参数 Map
+     * @return 更新后的订单信息
+     */
+    @PostMapping("/addAuditLog")
+    public ResponseEntity<OrderDTO> addAuditLog(@RequestBody Map<String, Object> request) {
+        try {
+            log.info("=== 开始添加审核日志 ===");
+            String orderUnique = (String) request.get("order_unique");
+            Map<String, Object> auditLog = (Map<String, Object>) request.get("auditLogs");
+
+            log.info("订单唯一标识: {}", orderUnique);
+            log.info("审核日志: {}", auditLog);
+
+            OrderDTO result = orderService.addAuditLog(orderUnique, auditLog);
+            log.info("审核日志添加成功");
+            log.info("=== 添加审核日志完成 ===");
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("=== 添加审核日志失败 ===");
+            log.error("错误类型: {}", e.getClass().getName());
+            log.error("错误信息: {}", e.getMessage(), e);
             return ResponseEntity.badRequest().build();
         }
     }

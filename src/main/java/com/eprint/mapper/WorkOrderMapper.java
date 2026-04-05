@@ -20,7 +20,7 @@ public class WorkOrderMapper {
         WorkOrderDTO dto = new WorkOrderDTO();
 
         dto.setWork_id(workOrder.getWorkId());
-        dto.setWork_ver(workOrder.getWorkVer() != null ? workOrder.getWorkVer().toString() : null);
+        dto.setWork_ver(workOrder.getWorkVer());
         dto.setWork_unique(workOrder.getWorkUnique());
         dto.setWorkorderstatus(workOrder.getReviewStatus() != null ? workOrder.getReviewStatus().name() : null);
         dto.setWork_clerk(workOrder.getWorkClerk());
@@ -56,7 +56,7 @@ public class WorkOrderMapper {
             workOrder.setWorkId(dto.getWork_id());
         }
         if (dto.getWork_ver() != null) {
-            try { workOrder.setWorkVer(Integer.parseInt(dto.getWork_ver().replaceAll("[^0-9]", ""))); } catch (Exception e) { workOrder.setWorkVer(1); }
+            workOrder.setWorkVer(dto.getWork_ver());
         }
         if (dto.getWork_unique() != null) {
             workOrder.setWorkUnique(dto.getWork_unique());

@@ -20,7 +20,7 @@ public class OrderMapper {
         OrderDTO dto = new OrderDTO();
 
         dto.setOrder_id(order.getOrderNumber());
-        dto.setOrder_ver(order.getOrderVer() != null ? order.getOrderVer().toString() : null);
+        dto.setOrder_ver(order.getOrderVer());
         dto.setOrder_unique(order.getOrderUnique());
         dto.setOrderstatus(order.getStatus() != null ? order.getStatus().name() : null);
         dto.setSales(order.getSales());
@@ -95,7 +95,7 @@ public class OrderMapper {
             order.setOrderNumber(dto.getOrder_id());
         }
         if (dto.getOrder_ver() != null) {
-            try { order.setOrderVer(Integer.parseInt(dto.getOrder_ver().replaceAll("[^0-9]", ""))); } catch (Exception e) { order.setOrderVer(1); }
+            order.setOrderVer(dto.getOrder_ver());
         }
         if (dto.getOrder_unique() != null) {
             order.setOrderUnique(dto.getOrder_unique());

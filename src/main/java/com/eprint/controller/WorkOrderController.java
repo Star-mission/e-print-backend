@@ -27,12 +27,25 @@ public class WorkOrderController {
             @RequestParam(value = "files", required = false) List<MultipartFile> files) {
 
         try {
-            log.info("Received work order creation request");
+            log.info("=== 开始创建工程单 ===");
+            log.info("接收到的 JSON 数据: {}", jsonData);
+            log.info("附件数量: {}", files != null ? files.size() : 0);
+
             WorkOrderDTO workOrderDTO = objectMapper.readValue(jsonData, WorkOrderDTO.class);
+            log.info("工程单反序列化成功 - work_id: {}, customer: {}",
+                    workOrderDTO.getWork_id(), workOrderDTO.getCustomer());
+
             WorkOrderDTO result = workOrderService.createWorkOrder(workOrderDTO, files);
+            log.info("工程单创建成功 - work_unique: {}", result.getWork_unique());
+
             return ResponseEntity.ok(result);
         } catch (Exception e) {
-            log.error("Error creating work order", e);
+            log.error("创建工程单失败", e);
+            log.error("错误类型: {}", e.getClass().getName());
+            log.error("错误信息: {}", e.getMessage());
+            if (e.getCause() != null) {
+                log.error("根本原因: {}", e.getCause().getMessage());
+            }
             return ResponseEntity.badRequest().build();
         }
     }
