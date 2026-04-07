@@ -74,9 +74,88 @@ public class WorkOrderController {
     }
 
     @GetMapping("/findWithStatus")
-    public ResponseEntity<List<WorkOrderDTO>> findByStatus(@RequestParam("orderstatus") String status) {
-        List<WorkOrderDTO> workOrders = workOrderService.getWorkOrdersByStatus(status);
-        return ResponseEntity.ok(workOrders);
+    public ResponseEntity<List<WorkOrderDTO>> findByStatus(@RequestParam("workorderstatus") String status) {
+        log.info("=== 接收到按状态查询工程单请求 ===");
+        log.info("请求参数 - workorderstatus: {}", status);
+        try {
+            List<WorkOrderDTO> workOrders = workOrderService.getWorkOrdersByStatus(status);
+            log.info("查询成功，返回 {} 条工程单", workOrders.size());
+
+            // 打印返回的工程单概要
+            if (!workOrders.isEmpty()) {
+                log.info("返回的工程单列表:");
+                workOrders.forEach(wo -> {
+                    log.info("  - work_unique: {}, customer: {}, status: {}",
+                            wo.getWork_unique(), wo.getCustomer(), wo.getWorkorderstatus());
+                });
+            } else {
+                log.warn("查询结果为空，没有找到状态为 {} 的工程单", status);
+            }
+
+            log.info("=== 按状态查询工程单请求完成 ===");
+            return ResponseEntity.ok(workOrders);
+        } catch (IllegalArgumentException e) {
+            log.error("状态参数错误: {}", status, e);
+            log.error("有效的状态值: 草稿, 待审核, 通过, 驳回, 生产中, 完成, 取消");
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            log.error("查询工程单时发生错误", e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * 添加审核员信息
+     * POST /api/workOrders/addAuditInfo
+     */
+    @PostMapping("/addAuditInfo")
+    public ResponseEntity<WorkOrderDTO> addAuditInfo(@RequestBody Map<String, String> request) {
+        try {
+            log.info("=== 开始添加审核员信息 ===");
+            String workUnique = request.get("work_unique");
+            String work_audit = request.get("work_audit");
+            String audit_date = request.get("auditDate");
+
+            log.info("工程单唯一标识: {}", workUnique);
+            log.info("审核员: {}", work_audit);
+            log.info("审核日期: {}", audit_date);
+
+            WorkOrderDTO result = workOrderService.addAuditInfo(workUnique, work_audit, audit_date);
+            log.info("审核员信息添加成功");
+            log.info("=== 添加审核员信息完成 ===");
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("=== 添加审核员信息失败 ===");
+            log.error("错误类型: {}", e.getClass().getName());
+            log.error("错误信息: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
+     * 添加审核日志
+     * POST /api/workOrders/addAuditLog
+     */
+    @PostMapping("/addAuditLog")
+    public ResponseEntity<WorkOrderDTO> addAuditLog(@RequestBody Map<String, Object> request) {
+        try {
+            log.info("=== 开始添加审核日志 ===");
+            String workUnique = (String) request.get("work_unique");
+            Map<String, Object> auditLog = (Map<String, Object>) request.get("auditLogs");
+
+            log.info("工程单唯一标识: {}", workUnique);
+            log.info("审核日志: {}", auditLog);
+
+            WorkOrderDTO result = workOrderService.addAuditLog(workUnique, auditLog);
+            log.info("审核日志添加成功");
+            log.info("=== 添加审核日志完成 ===");
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("=== 添加审核日志失败 ===");
+            log.error("错误类型: {}", e.getClass().getName());
+            log.error("错误信息: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PostMapping("/updateStatus")

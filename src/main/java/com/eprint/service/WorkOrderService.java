@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -173,11 +174,34 @@ public class WorkOrderService {
 
     @Transactional(readOnly = true)
     public List<WorkOrderDTO> getWorkOrdersByStatus(String statusText) {
+        log.info("=== 开始查询工程单 - 按状态 ===");
+        log.info("查询状态: {}", statusText);
+
         EngineeringOrder.OrderStatus status = EngineeringOrder.OrderStatus.valueOf(statusText);
+        log.info("状态枚举转换成功: {}", status);
+
         List<EngineeringOrder> workOrders = engineeringOrderRepository.findByReviewStatusAndIsDeletedNot(status, "是");
-        return workOrders.stream()
+        log.info("数据库查询完成，找到 {} 条工程单", workOrders.size());
+
+        if (workOrders.isEmpty()) {
+            log.warn("未找到状态为 {} 的工程单", statusText);
+            return List.of();
+        }
+
+        // 打印每个工程单的基本信息
+        workOrders.forEach(wo -> {
+            log.info("工程单详情 - work_unique: {}, work_id: {}, customer: {}, status: {}, isDeleted: {}",
+                    wo.getWorkUnique(), wo.getWorkId(), wo.getKeHu(), wo.getReviewStatus(), wo.getIsDeleted());
+        });
+
+        List<WorkOrderDTO> result = workOrders.stream()
                 .map(wo -> workOrderMapper.toDTO(wo, getAuditLogs(wo.getEngineeringOrderId())))
                 .collect(Collectors.toList());
+
+        log.info("DTO 转换完成，返回 {} 条记录", result.size());
+        log.info("=== 查询工程单完成 ===");
+
+        return result;
     }
 
     @Transactional
@@ -204,6 +228,59 @@ public class WorkOrderService {
         );
 
         return workOrderMapper.toDTO(savedWorkOrder, getAuditLogs(savedWorkOrder.getEngineeringOrderId()));
+    }
+
+    /**
+     * 添加审核员信息
+     */
+    @Transactional
+    public WorkOrderDTO addAuditInfo(String workUnique, String workAudit, String auditDate) {
+        log.info("Adding audit info to work order: {}", workUnique);
+        log.info("Auditor: {}, Audit date: {}", workAudit, auditDate);
+
+        EngineeringOrder workOrder = engineeringOrderRepository.findByWorkUnique(workUnique)
+                .orElseThrow(() -> new RuntimeException("Work order not found: " + workUnique));
+
+        workOrder.setWorkAudit(workAudit);
+
+        EngineeringOrder savedWorkOrder = engineeringOrderRepository.save(workOrder);
+
+        createAuditLog(
+                "ADD_AUDIT_INFO",
+                "添加审核员信息",
+                "EngineeringOrder",
+                savedWorkOrder.getEngineeringOrderId(),
+                null,
+                workAudit
+        );
+
+        return workOrderMapper.toDTO(savedWorkOrder, getAuditLogs(savedWorkOrder.getEngineeringOrderId()));
+    }
+
+    /**
+     * 添加审核日志
+     */
+    @Transactional
+    public WorkOrderDTO addAuditLog(String workUnique, Map<String, Object> auditLogData) {
+        log.info("Adding audit log to work order: {}", workUnique);
+
+        EngineeringOrder workOrder = engineeringOrderRepository.findByWorkUnique(workUnique)
+                .orElseThrow(() -> new RuntimeException("Work order not found: " + workUnique));
+
+        String operator = (String) auditLogData.get("operator");
+        String action = (String) auditLogData.get("action");
+        String comment = (String) auditLogData.get("comment");
+
+        createAuditLog(
+                action != null ? action : "AUDIT_LOG",
+                comment != null ? comment : "审核日志",
+                "EngineeringOrder",
+                workOrder.getEngineeringOrderId(),
+                null,
+                operator
+        );
+
+        return workOrderMapper.toDTO(workOrder, getAuditLogs(workOrder.getEngineeringOrderId()));
     }
 
     @Transactional
