@@ -313,22 +313,17 @@ public class WorkOrderService {
     }
 
     /**
-     * 为工序分配采购负责人
+     * 按 intermediaID 为工序分配采购负责人
      */
     @Transactional
     public WorkOrderDTO addHeadPur(String workUnique, Integer intermediaID, String headPUR) {
-        log.info("Adding PUR head to work order: {} intermedia: {}", workUnique, intermediaID);
+        log.info("Adding PUR head to work order: {} intermediaID: {}", workUnique, intermediaID);
 
         EngineeringOrder workOrder = engineeringOrderRepository.findByWorkUnique(workUnique)
                 .orElseThrow(() -> new RuntimeException("Work order not found: " + workUnique));
 
-        List<MaterialLine> materialLines = workOrder.getMaterialLines();
-        if (intermediaID >= 0 && intermediaID < materialLines.size()) {
-            MaterialLine materialLine = materialLines.get(intermediaID);
-            materialLine.setHeadPUR(headPUR);
-        } else {
-            throw new RuntimeException("Invalid intermedia index: " + intermediaID);
-        }
+        MaterialLine materialLine = findMaterialLineByIntermediaID(workOrder, intermediaID);
+        materialLine.setHeadPUR(headPUR);
 
         EngineeringOrder savedWorkOrder = engineeringOrderRepository.save(workOrder);
 
@@ -345,22 +340,17 @@ public class WorkOrderService {
     }
 
     /**
-     * 为工序分配外发负责人
+     * 按 intermediaID 为工序分配外发负责人
      */
     @Transactional
     public WorkOrderDTO addHeadOut(String workUnique, Integer intermediaID, String headOUT) {
-        log.info("Adding OUT head to work order: {} intermedia: {}", workUnique, intermediaID);
+        log.info("Adding OUT head to work order: {} intermediaID: {}", workUnique, intermediaID);
 
         EngineeringOrder workOrder = engineeringOrderRepository.findByWorkUnique(workUnique)
                 .orElseThrow(() -> new RuntimeException("Work order not found: " + workUnique));
 
-        List<MaterialLine> materialLines = workOrder.getMaterialLines();
-        if (intermediaID >= 0 && intermediaID < materialLines.size()) {
-            MaterialLine materialLine = materialLines.get(intermediaID);
-            materialLine.setHeadOUT(headOUT);
-        } else {
-            throw new RuntimeException("Invalid intermedia index: " + intermediaID);
-        }
+        MaterialLine materialLine = findMaterialLineByIntermediaID(workOrder, intermediaID);
+        materialLine.setHeadOUT(headOUT);
 
         EngineeringOrder savedWorkOrder = engineeringOrderRepository.save(workOrder);
 
@@ -403,22 +393,17 @@ public class WorkOrderService {
     }
 
     /**
-     * 更新采购进度
+     * 按 intermediaID 更新采购进度
      */
     @Transactional
     public WorkOrderDTO updateProgressPur(String workUnique, Integer intermediaID, Integer yiGouJianShu) {
-        log.info("Updating PUR progress for work order: {} intermedia: {}", workUnique, intermediaID);
+        log.info("Updating PUR progress for work order: {} intermediaID: {}", workUnique, intermediaID);
 
         EngineeringOrder workOrder = engineeringOrderRepository.findByWorkUnique(workUnique)
                 .orElseThrow(() -> new RuntimeException("Work order not found: " + workUnique));
 
-        List<MaterialLine> materialLines = workOrder.getMaterialLines();
-        if (intermediaID >= 0 && intermediaID < materialLines.size()) {
-            MaterialLine materialLine = materialLines.get(intermediaID);
-            materialLine.setYiGouJianShu(yiGouJianShu);
-        } else {
-            throw new RuntimeException("Invalid intermedia index: " + intermediaID);
-        }
+        MaterialLine materialLine = findMaterialLineByIntermediaID(workOrder, intermediaID);
+        materialLine.setYiGouJianShu(yiGouJianShu);
 
         EngineeringOrder savedWorkOrder = engineeringOrderRepository.save(workOrder);
 
@@ -435,29 +420,24 @@ public class WorkOrderService {
     }
 
     /**
-     * 更新外发进度
+     * 按 intermediaID 更新外发进度
      */
     @Transactional
     public WorkOrderDTO updateProgressOut(String workUnique, Integer intermediaID,
                                          String kaiShiRiQi, String yuQiJieShu, String dangQianJinDu) {
-        log.info("Updating OUT progress for work order: {} intermedia: {}", workUnique, intermediaID);
+        log.info("Updating OUT progress for work order: {} intermediaID: {}", workUnique, intermediaID);
 
         EngineeringOrder workOrder = engineeringOrderRepository.findByWorkUnique(workUnique)
                 .orElseThrow(() -> new RuntimeException("Work order not found: " + workUnique));
 
-        List<MaterialLine> materialLines = workOrder.getMaterialLines();
-        if (intermediaID >= 0 && intermediaID < materialLines.size()) {
-            MaterialLine materialLine = materialLines.get(intermediaID);
-            if (kaiShiRiQi != null) {
-                materialLine.setKaiShiShiJian(LocalDateTime.parse(kaiShiRiQi));
-            }
-            if (yuQiJieShu != null) {
-                materialLine.setJieShuShiJian(LocalDateTime.parse(yuQiJieShu));
-            }
-            materialLine.setDangQianJinDu(dangQianJinDu);
-        } else {
-            throw new RuntimeException("Invalid intermedia index: " + intermediaID);
+        MaterialLine materialLine = findMaterialLineByIntermediaID(workOrder, intermediaID);
+        if (kaiShiRiQi != null) {
+            materialLine.setKaiShiShiJian(LocalDateTime.parse(kaiShiRiQi));
         }
+        if (yuQiJieShu != null) {
+            materialLine.setJieShuShiJian(LocalDateTime.parse(yuQiJieShu));
+        }
+        materialLine.setDangQianJinDu(dangQianJinDu);
 
         EngineeringOrder savedWorkOrder = engineeringOrderRepository.save(workOrder);
 
@@ -526,6 +506,18 @@ public class WorkOrderService {
 
     private List<AuditLog> getAuditLogs(String engineeringOrderId) {
         return auditLogRepository.findByEntityTypeAndEntityId("EngineeringOrder", engineeringOrderId);
+    }
+
+    private MaterialLine findMaterialLineByIntermediaID(EngineeringOrder workOrder, Integer intermediaID) {
+        if (intermediaID == null) {
+            throw new RuntimeException("intermediaID cannot be null");
+        }
+
+        return workOrder.getMaterialLines().stream()
+                .filter(line -> intermediaID.equals(line.getIntermediaID()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException(
+                        "MaterialLine not found for intermediaID: " + intermediaID + ", workUnique: " + workOrder.getWorkUnique()));
     }
 
     private void createAuditLog(String action, String description, String entityType,

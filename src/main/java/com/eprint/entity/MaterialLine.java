@@ -17,7 +17,8 @@ public class MaterialLine {
     @JoinColumn(name = "engineering_order_id", nullable = false)
     private EngineeringOrder engineeringOrder;
 
-    private Integer intermediaIndex;  // 在 intermedia 数组中的索引位置
+    @Column(name = "intermedia_index")
+    private Integer intermediaID;  // 用于匹配具体 MaterialLine 的唯一标识
 
     private String materialName;
     private String specification;

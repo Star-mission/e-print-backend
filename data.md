@@ -189,7 +189,7 @@ const createFullWorkOrderTemplate = (): IWorkOrder => {
     benChangFangSun: '2.0%',                // string: 本厂放损
     chuYangRiqiRequired: '2026-02-10',      // string: 出样日期要求
     chuHuoRiqiRequired: '2026-03-15',       // string: 出货日期要求
-    workorderstatus: WorkOrderStatus.PENDING_REVIEW,// OrderStatus: 订单状态
+    workorderstatus: WorkOrderStatus.DRAFT,// WorkOrderStatus: 工程单状态（注意：实际前端代码中创建时为"草稿"，而非"待审核"）
     zhuangDingJianShu: '26',//number: 已经装订件数，zhuangDingJianShu/dingDanShuLiang=装订进度
     zhuangDingStart: '2026-04-01' //装订开始时间
     zhuangDingEnd: '2026-04-03'//装订结束时间
@@ -254,14 +254,19 @@ const createFullWorkOrderTemplate = (): IWorkOrder => {
   }
 }
 export enum WorkOrderStatus {
-  DRAFT = '草稿',
-  PENDING_REVIEW = '待审核',
-  APPROVED = '通过',
-  REJECTED = '驳回',
-  IN_PRODUCTION = '生产中',
-  COMPLETED = '完成',
-  CANCELLED = '取消',
+  DRAFT = '草稿',           // 工程单创建时的初始状态（前端 OrderReviewer.vue:286 行赋值）
+  PENDING_REVIEW = '待审核',  // 工程单提交审核后的状态
+  APPROVED = '通过',         // 工程单审核通过
+  REJECTED = '驳回',         // 工程单审核驳回
+  IN_PRODUCTION = '生产中',   // 工程单进入生产阶段
+  COMPLETED = '完成',        // 工程单完成
+  CANCELLED = '取消',        // 工程单取消
 }
+
+// 重要说明：
+// 1. 前端在订单审核通过后创建工程单时，workorderstatus 初始值为 WorkOrderStatus.DRAFT（草稿）
+// 2. 赋值位置：/src/views/OrderReviewer.vue 第 286 行
+// 3. 创建函数：createWorkOrderFromOrder()
 // 在 Vue 中创建该全量响应式对象
 const workOrder = reactive<IWorkOrder>(createFullWorkOrderTemplate())
 IUser

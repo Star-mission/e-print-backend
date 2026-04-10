@@ -188,7 +188,7 @@ public class WorkOrderController {
     }
 
     /**
-     * 为工序分配采购负责人
+     * 为指定 intermediaID 对应的工序分配采购负责人
      * POST /api/workOrders/addHeadPur
      */
     @PostMapping("/addHeadPur")
@@ -207,7 +207,7 @@ public class WorkOrderController {
     }
 
     /**
-     * 为工序分配外发负责人
+     * 为指定 intermediaID 对应的工序分配外发负责人
      * POST /api/workOrders/addHeadOut
      */
     @PostMapping("/addHeadOut")
@@ -244,7 +244,7 @@ public class WorkOrderController {
     }
 
     /**
-     * 更新采购进度
+     * 按 intermediaID 匹配工序并更新采购进度
      * POST /api/workOrders/updateProgressPur
      */
     @PostMapping("/updateProgressPur")
@@ -263,7 +263,7 @@ public class WorkOrderController {
     }
 
     /**
-     * 更新外发进度
+     * 按 intermediaID 匹配工序并更新外发进度
      * POST /api/workOrders/updateProgressOut
      */
     @PostMapping("/updateProgressOut")

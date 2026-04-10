@@ -88,6 +88,7 @@ public class WorkOrderMapper {
 
     private IntermediaMaterialDTO toIntermediaMaterialDTO(MaterialLine line) {
         IntermediaMaterialDTO dto = new IntermediaMaterialDTO();
+        dto.setIntermediaID(line.getIntermediaID());
         dto.setWuLiaoMingCheng(line.getMaterialName());
         dto.setCaiLiaoGuiGe(line.getSpecification());
         dto.setYinChuShu(line.getQuantity());
@@ -103,6 +104,7 @@ public class WorkOrderMapper {
 
     private MaterialLine toMaterialLine(IntermediaMaterialDTO dto) {
         MaterialLine line = new MaterialLine();
+        line.setIntermediaID(dto.getIntermediaID());
         line.setMaterialName(dto.getWuLiaoMingCheng());
         line.setSpecification(dto.getCaiLiaoGuiGe());
         line.setQuantity(dto.getYinChuShu());

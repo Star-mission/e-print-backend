@@ -7,7 +7,7 @@ import lombok.Data;
 public class IntermediaMaterialDTO {
 
     // 前端 IIM 字段
-    private Integer intermediaID;  // 在 intermedia 数组中的索引位置
+    private Integer intermediaID;  // 用于匹配具体 intermedia / MaterialLine 的唯一标识
     private String buJianMingCheng;  // 部件名称
     private String yinShuaYanSe;    // 印刷颜色
     private String wuLiaoMingCheng; // 物料名称
