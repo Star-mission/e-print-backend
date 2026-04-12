@@ -1,21 +1,10 @@
--- 开发库兼容修复脚本
+-- Orders schema compatibility patch for historical local databases
 --
--- 用途：
--- 1. 为历史本地库补齐当前实体需要的已知字段
--- 2. 不作为“新机器 / 新空库”首次启动的主路径
---
--- 推荐流程：
--- - 新空库：启动 MySQL 后直接执行 `mvn spring-boot:run`，由 JPA 自动建表/补表
--- - 历史旧库：如启动时报 Unknown column、字段类型不兼容等问题，再执行本脚本
-
-CREATE DATABASE IF NOT EXISTS E_Bench
-CHARACTER SET utf8mb4
-COLLATE utf8mb4_unicode_ci;
+-- Run this only when an existing orders table is missing columns required by the current Order entity.
+-- For a brand-new empty database, start the backend directly and let JPA create/update the schema.
 
 USE E_Bench;
 
--- 仅当 orders 表已经存在时，才对历史结构做兼容修复。
--- 如果是全新空库，请直接启动应用，让 JPA 按实体创建表结构。
 SET @orders_table_exists = (
     SELECT COUNT(*)
     FROM information_schema.tables
@@ -58,11 +47,9 @@ SET @orders_sql = IF(
         ADD COLUMN IF NOT EXISTS zhuang_ding_fang_shi VARCHAR(255) NULL,
         ADD COLUMN IF NOT EXISTS zong_shu_liang INT NULL,
         ADD COLUMN IF NOT EXISTS zi_lei_xing TEXT NULL',
-    'SELECT ''Skip orders compatibility patch: table orders does not exist yet. Start the backend once on a new empty database so JPA can create tables.'' AS message'
+    'SELECT ''Skip orders_schema_migration.sql: table orders does not exist yet. For a new empty DB, start the backend directly.'' AS message'
 );
 
 PREPARE stmt FROM @orders_sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
-
-SELECT 'init-mysql.sql finished. New empty DBs should use JPA auto schema creation; this script is only for historical schema compatibility.' AS message;

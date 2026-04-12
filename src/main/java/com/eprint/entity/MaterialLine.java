@@ -20,9 +20,22 @@ public class MaterialLine {
     @Column(name = "intermedia_index")
     private Integer intermediaID;  // 用于匹配具体 MaterialLine 的唯一标识
 
+    private String buJianMingCheng;
+    private String yinShuaYanSe;
     private String materialName;
+    private String pinPai;
     private String specification;
+    private String FSC;
+    private Integer kaiShu;
+    private String shangJiChiCun;
+    private Integer paiBanMuShu;
     private Integer quantity;
+    private Integer yinSun;
+    private Integer lingLiaoShu;
+    private String biaoMianChuLi;
+    private Integer yinShuaBanShu;
+    private String shengChanLuJing;
+    private String paiBanFangShi;
     private String unit;
 
     private LocalDateTime kaiShiShiJian;

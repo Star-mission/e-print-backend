@@ -242,6 +242,7 @@ public class WorkOrderService {
                 .orElseThrow(() -> new RuntimeException("Work order not found: " + workUnique));
 
         workOrder.setWorkAudit(workAudit);
+        workOrder.setAuditDate(parseDateTime(auditDate));
 
         EngineeringOrder savedWorkOrder = engineeringOrderRepository.save(workOrder);
 
@@ -506,6 +507,19 @@ public class WorkOrderService {
 
     private List<AuditLog> getAuditLogs(String engineeringOrderId) {
         return auditLogRepository.findByEntityTypeAndEntityId("EngineeringOrder", engineeringOrderId);
+    }
+
+    private java.time.LocalDateTime parseDateTime(String dateStr) {
+        if (dateStr == null || dateStr.isEmpty()) return null;
+        try {
+            if (dateStr.length() == 10) return java.time.LocalDate.parse(dateStr).atStartOfDay();
+            if (dateStr.contains(" ")) {
+                dateStr = dateStr.replace(" ", "T");
+            }
+            return java.time.LocalDateTime.parse(dateStr);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private MaterialLine findMaterialLineByIntermediaID(EngineeringOrder workOrder, Integer intermediaID) {

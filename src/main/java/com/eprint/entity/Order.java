@@ -90,6 +90,16 @@ public class Order {
     private String audit;
 
     /**
+     * 业务提交日期
+     */
+    private LocalDateTime salesDate;
+
+    /**
+     * 订单审核日期
+     */
+    private LocalDateTime auditDate;
+
+    /**
      * 客户名称
      */
     private String customer;
@@ -113,6 +123,27 @@ public class Order {
      */
     private String isbn;
 
+    private String baoJiaDanHao;
+    private String xiLieDanMing;
+    private String chanPinDaLei;
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String ziLeiXing;
+    private String fscType;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String fenBanShuoMing;
+
+    private String baoLiuQianSe;
+    private Boolean cpcQueRen;
+    private Boolean waixiaoFlag;
+    private Boolean cpsiaYaoqiu;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String dingZhiBeiZhu;
+
     // ==========================================
     // 数量信息
     // ==========================================
@@ -131,6 +162,13 @@ public class Order {
      * 超比例数量
      */
     private Integer chaoBiLiShuLiang;
+
+    private Integer teShuLiuYangZhang;
+    private Integer beiPinShuLiang;
+    private Integer teShuLiuShuYang;
+    private Integer zongShuLiang;
+    private Integer chuYangShuoMing;
+    private Integer chuHuoShuLiang;
 
     // ==========================================
     // 规格尺寸（单位：毫米）
@@ -151,6 +189,12 @@ public class Order {
      */
     private Double guigeHouMm;
 
+    private String zhuangDingFangShi;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String genSeZhiShi;
+
     // ==========================================
     // 说明和备注信息
     // ==========================================
@@ -159,36 +203,49 @@ public class Order {
      * 辅料说明
      * 最大长度：2000 字符
      */
-    @Column(length = 2000)
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String fuLiaoShuoMing;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String chanPinMingXiTeBieShuoMing;
 
     /**
      * 物料说明
      * 最大长度：2000 字符
      */
-    @Column(length = 2000)
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String wuLiaoShuoMing;
 
     /**
      * 质量要求
      * 最大长度：2000 字符
      */
-    @Column(length = 2000)
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String zhiLiangYaoQiu;
 
     /**
      * 备注信息
      * 最大长度：2000 字符
      */
-    @Column(length = 2000)
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String beiZhu;
 
     /**
      * 客来信息
      * 最大长度：2000 字符
      */
-    @Column(length = 2000)
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String keLaiXinXi;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String yongTu;
 
     // ==========================================
     // 时间节点
@@ -213,6 +270,26 @@ public class Order {
      * 印章日期 2
      */
     private LocalDateTime yinzhangRiqi2;
+
+    /**
+     * 折牌日期 1
+     */
+    private LocalDateTime zhepaiRiqi1;
+
+    /**
+     * 折牌日期 2
+     */
+    private LocalDateTime zhepaiRiqi2;
+
+    /**
+     * 出样日期 1
+     */
+    private LocalDateTime chuyangRiqi1;
+
+    /**
+     * 出样日期 2
+     */
+    private LocalDateTime chuyangRiqi2;
 
     /**
      * 交货日期 1

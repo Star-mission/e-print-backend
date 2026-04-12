@@ -30,16 +30,29 @@ public class EngineeringOrder {
     private OrderStatus reviewStatus;
 
     private String workClerk;
+    private LocalDateTime clerkDate;
     private String workAudit;
+    private LocalDateTime auditDate;
     private String keHu;
     private String po;
     private String chengPinMingCheng;
+    private String chanPinGuiGe;
+    private String gongDanLeiXing;
+    private String caiLiao;
+    private String chanPinLeiXing;
+    private LocalDateTime zhiDanShiJian;
 
+    private Integer dingDanShuLiang;
     private Integer chuYangShu;
     private Integer chaoBiLi;
+    private Integer benChangFangSun;
+    private LocalDateTime chuYangRiqiRequired;
+    private LocalDateTime chuHuoRiqiRequired;
 
     // 新增字段 - 来自 Change.md
     private Integer zhuangDingJianShu;  // 已装订件数
+    private LocalDateTime zhuangDingStart;
+    private LocalDateTime zhuangDingEnd;
     private String headMNF;  // 生产负责人
 
     @Column(length = 2000)

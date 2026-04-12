@@ -24,13 +24,26 @@ public class OrderMapper {
         dto.setOrder_unique(order.getOrderUnique());
         dto.setOrderstatus(order.getStatus() != null ? order.getStatus().name() : null);
         dto.setSales(order.getSales());
+        dto.setSalesDate(order.getSalesDate() != null ? order.getSalesDate().toString() : null);
         dto.setAudit(order.getAudit());
+        dto.setAuditDate(order.getAuditDate() != null ? order.getAuditDate().toString() : null);
         dto.setCustomer(order.getCustomer());
         dto.setProductName(order.getProductName());
         dto.setCustomerPO(order.getCustomerPO());
         dto.setJiuBianMa(order.getJiuBianMa());
         dto.setQiTaShiBie(order.getQiTaShiBie());
         dto.setIsbn(order.getIsbn());
+        dto.setBaoJiaDanHao(order.getBaoJiaDanHao());
+        dto.setXiLieDanMing(order.getXiLieDanMing());
+        dto.setChanPinDaLei(order.getChanPinDaLei());
+        dto.setZiLeiXing(order.getZiLeiXing());
+        dto.setFscType(order.getFscType());
+        dto.setFenBanShuoMing(order.getFenBanShuoMing());
+        dto.setBaoLiuQianSe(order.getBaoLiuQianSe());
+        dto.setCpcQueRen(order.getCpcQueRen());
+        dto.setWaixiaoFlag(order.getWaixiaoFlag());
+        dto.setCpsiaYaoqiu(order.getCpsiaYaoqiu());
+        dto.setDingZhiBeiZhu(order.getDingZhiBeiZhu());
 
         dto.setFenBanShuoMing2(order.getFenBanShuoMing2());
         dto.setYinShuaGenSeYaoQiu(order.getYinShuaGenSeYaoQiu());
@@ -50,10 +63,18 @@ public class OrderMapper {
         dto.setDingDanShuLiang(order.getDingDanShuLiang());
         dto.setChuYangShuLiang(order.getChuYangShuLiang());
         dto.setChaoBiLiShuLiang(order.getChaoBiLiShuLiang());
+        dto.setTeShuLiuYangZhang(order.getTeShuLiuYangZhang());
+        dto.setBeiPinShuLiang(order.getBeiPinShuLiang());
+        dto.setTeShuLiuShuYang(order.getTeShuLiuShuYang());
+        dto.setZongShuLiang(order.getZongShuLiang());
+        dto.setChuYangShuoMing(order.getChuYangShuoMing());
+        dto.setChuHuoShuLiang(order.getChuHuoShuLiang());
 
         dto.setGuigeGaoMm(order.getGuigeGaoMm());
         dto.setGuigeKuanMm(order.getGuigeKuanMm());
         dto.setGuigeHouMm(order.getGuigeHouMm());
+        dto.setZhuangDingFangShi(order.getZhuangDingFangShi());
+        dto.setGenSeZhiShi(order.getGenSeZhiShi());
 
         dto.setFuLiaoShuoMing(order.getFuLiaoShuoMing());
         dto.setWuLiaoShuoMing(order.getWuLiaoShuoMing());
@@ -66,9 +87,14 @@ public class OrderMapper {
         dto.setXiaZiliaodaiRiqiPromise(order.getXiaZiliaodaiRiqi2() != null ? order.getXiaZiliaodaiRiqi2().toString() : null);
         dto.setYinzhangRiqiRequired(order.getYinzhangRiqi1() != null ? order.getYinzhangRiqi1().toString() : null);
         dto.setYinzhangRiqiPromise(order.getYinzhangRiqi2() != null ? order.getYinzhangRiqi2().toString() : null);
+        dto.setZhepaiRiqiRequired(order.getZhepaiRiqi1() != null ? order.getZhepaiRiqi1().toString() : null);
+        dto.setZhepaiRiqiPromise(order.getZhepaiRiqi2() != null ? order.getZhepaiRiqi2().toString() : null);
+        dto.setChuyangRiqiRequired(order.getChuyangRiqi1() != null ? order.getChuyangRiqi1().toString() : null);
+        dto.setChuyangRiqiPromise(order.getChuyangRiqi2() != null ? order.getChuyangRiqi2().toString() : null);
         dto.setChuHuoRiqiRequired(order.getJiaoHuoRiQi1() != null ? order.getJiaoHuoRiQi1().toString() : null);
         dto.setChuHuoRiqiPromise(order.getJiaoHuoRiQi2() != null ? order.getJiaoHuoRiQi2().toString() : null);
 
+        dto.setYongTu(order.getYongTu());
         dto.setYeWuDaiBiaoFenJi(order.getYeWuDaiBiaoFenJi());
         dto.setShenHeRen(order.getShenHeRen());
         dto.setDaYinRen(order.getDaYinRen());
@@ -102,17 +128,36 @@ public class OrderMapper {
         }
 
         order.setSales(dto.getSales());
+        order.setSalesDate(parseDateTime(dto.getSalesDate()));
         order.setAudit(dto.getAudit());
+        order.setAuditDate(parseDateTime(dto.getAuditDate()));
         order.setCustomer(dto.getCustomer());
         order.setProductName(dto.getProductName());
         order.setCustomerPO(dto.getCustomerPO());
         order.setJiuBianMa(dto.getJiuBianMa());
         order.setQiTaShiBie(dto.getQiTaShiBie());
         order.setIsbn(dto.getIsbn());
+        order.setBaoJiaDanHao(dto.getBaoJiaDanHao());
+        order.setXiLieDanMing(dto.getXiLieDanMing());
+        order.setChanPinDaLei(dto.getChanPinDaLei());
+        order.setZiLeiXing(dto.getZiLeiXing());
+        order.setFscType(dto.getFscType());
+        order.setFenBanShuoMing(dto.getFenBanShuoMing());
+        order.setBaoLiuQianSe(dto.getBaoLiuQianSe());
+        order.setCpcQueRen(dto.getCpcQueRen());
+        order.setWaixiaoFlag(dto.getWaixiaoFlag());
+        order.setCpsiaYaoqiu(dto.getCpsiaYaoqiu());
+        order.setDingZhiBeiZhu(dto.getDingZhiBeiZhu());
 
         order.setDingDanShuLiang(dto.getDingDanShuLiang());
         order.setChuYangShuLiang(dto.getChuYangShuLiang());
         order.setChaoBiLiShuLiang(dto.getChaoBiLiShuLiang());
+        order.setTeShuLiuYangZhang(dto.getTeShuLiuYangZhang());
+        order.setBeiPinShuLiang(dto.getBeiPinShuLiang());
+        order.setTeShuLiuShuYang(dto.getTeShuLiuShuYang());
+        order.setZongShuLiang(dto.getZongShuLiang());
+        order.setChuYangShuoMing(dto.getChuYangShuoMing());
+        order.setChuHuoShuLiang(dto.getChuHuoShuLiang());
 
         order.setFenBanShuoMing2(dto.getFenBanShuoMing2());
         order.setYinShuaGenSeYaoQiu(dto.getYinShuaGenSeYaoQiu());
@@ -132,18 +177,26 @@ public class OrderMapper {
         order.setGuigeGaoMm(dto.getGuigeGaoMm());
         order.setGuigeKuanMm(dto.getGuigeKuanMm());
         order.setGuigeHouMm(dto.getGuigeHouMm());
+        order.setZhuangDingFangShi(dto.getZhuangDingFangShi());
+        order.setGenSeZhiShi(dto.getGenSeZhiShi());
 
         order.setFuLiaoShuoMing(dto.getFuLiaoShuoMing());
         order.setWuLiaoShuoMing(dto.getWuLiaoShuoMing());
+        order.setChanPinMingXiTeBieShuoMing(dto.getChanPinMingXiTeBieShuoMing());
         order.setZhiLiangYaoQiu(dto.getZhiLiangYaoQiu());
         order.setBeiZhu(dto.getBeiZhu());
         order.setKeLaiXinXi(dto.getKeLaiXinxi());
+        order.setYongTu(dto.getYongTu());
 
         // 日期字段：前端使用 Required/Promise 命名，后端实体使用 1/2 命名
         order.setXiaZiliaodaiRiqi1(parseDateTime(dto.getXiaZiliaodaiRiqiRequired()));
         order.setXiaZiliaodaiRiqi2(parseDateTime(dto.getXiaZiliaodaiRiqiPromise()));
         order.setYinzhangRiqi1(parseDateTime(dto.getYinzhangRiqiRequired()));
         order.setYinzhangRiqi2(parseDateTime(dto.getYinzhangRiqiPromise()));
+        order.setZhepaiRiqi1(parseDateTime(dto.getZhepaiRiqiRequired()));
+        order.setZhepaiRiqi2(parseDateTime(dto.getZhepaiRiqiPromise()));
+        order.setChuyangRiqi1(parseDateTime(dto.getChuyangRiqiRequired()));
+        order.setChuyangRiqi2(parseDateTime(dto.getChuyangRiqiPromise()));
         order.setJiaoHuoRiQi1(parseDateTime(dto.getChuHuoRiqiRequired()));
         order.setJiaoHuoRiQi2(parseDateTime(dto.getChuHuoRiqiPromise()));
 
@@ -170,6 +223,7 @@ public class OrderMapper {
         dto.setUnitPrice(item.getUnitPrice());
         dto.setTotalPrice(item.getTotalPrice());
         dto.setNotes(item.getNotes());
+        dto.setBeiZhu(item.getNotes());
 
         dto.setNeiWen(item.getNeiWen());
         dto.setYongZhiChiCun(item.getYongZhiChiCun());
@@ -196,7 +250,7 @@ public class OrderMapper {
         item.setUnit(dto.getUnit());
         item.setUnitPrice(dto.getUnitPrice());
         item.setTotalPrice(dto.getTotalPrice());
-        item.setNotes(dto.getNotes());
+        item.setNotes(dto.getBeiZhu() != null ? dto.getBeiZhu() : dto.getNotes());
 
         item.setNeiWen(dto.getNeiWen());
         item.setYongZhiChiCun(dto.getYongZhiChiCun());

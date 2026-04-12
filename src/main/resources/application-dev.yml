@@ -1,5 +1,5 @@
 # 开发环境配置
-# 使用方式：mvn spring-boot:run -Dspring-boot.run.profiles=dev
+# 默认 profile 为 dev，推荐直接执行：mvn spring-boot:run
 
 spring:
   application:
@@ -8,11 +8,11 @@ spring:
   config:
     import: optional:classpath:application-local.yml
 
-  # MySQL 数据源配置（Docker）
+  # MySQL 数据源配置（开发环境默认指向本地 Docker，可用环境变量覆盖）
   datasource:
-    url: jdbc:mysql://localhost:3306/E_Bench?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
-    username: eprint
-    password: eprint123
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:E_Bench}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
+    username: ${DB_USERNAME:eprint}
+    password: ${DB_PASSWORD:eprint123}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   # JPA 配置

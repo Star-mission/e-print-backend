@@ -1,156 +1,130 @@
-# 数据库初始化脚本
+# 数据库启动与兼容说明
 
-## MySQL 数据库初始化
+## 当前推荐路径
 
-```sql
--- 创建数据库
-CREATE DATABASE IF NOT EXISTS E_Bench
-CHARACTER SET utf8mb4
-COLLATE utf8mb4_unicode_ci;
+开发环境的稳定启动路径是：
 
-USE E_Bench;
+1. 启动 MySQL
+2. 启动后端
+3. 让 JPA 在 `dev` 环境自动创建/更新表结构
 
--- Spring Boot 会自动创建表结构（通过 JPA），但如果需要手动创建，可以使用以下脚本：
+也就是说，新机器或新空库场景下，数据库初始化主路径不是手工执行 SQL，而是：
 
--- 订单表
-CREATE TABLE IF NOT EXISTS orders (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    order_number VARCHAR(255) NOT NULL UNIQUE,
-    order_ver INT,
-    order_unique VARCHAR(255) UNIQUE,
-    status VARCHAR(50),
-    sales VARCHAR(255),
-    audit VARCHAR(255),
-    customer VARCHAR(255),
-    product_name VARCHAR(255),
-    customer_po VARCHAR(255),
-    isbn VARCHAR(255),
-    ding_dan_shu_liang INT,
-    chu_yang_shu_liang INT,
-    chao_bi_li_shu_liang INT,
-    guige_gao_mm DOUBLE,
-    guige_kuan_mm DOUBLE,
-    guige_hou_mm DOUBLE,
-    fu_liao_shuo_ming TEXT,
-    wu_liao_shuo_ming TEXT,
-    zhi_liang_yao_qiu TEXT,
-    bei_zhu TEXT,
-    ke_lai_xin_xi TEXT,
-    xia_ziliaodai_riqi1 DATETIME,
-    xia_ziliaodai_riqi2 DATETIME,
-    yinzhang_riqi1 DATETIME,
-    yinzhang_riqi2 DATETIME,
-    jiao_huo_ri_qi1 DATETIME,
-    jiao_huo_ri_qi2 DATETIME,
-    ye_wu_dai_biao_fen_ji VARCHAR(255),
-    shen_he_ren VARCHAR(255),
-    da_yin_ren VARCHAR(255),
-    created_at DATETIME NOT NULL,
-    updated_at DATETIME NOT NULL,
-    INDEX idx_order_unique (order_unique)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- 订单明细表
-CREATE TABLE IF NOT EXISTS order_items (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    order_id BIGINT NOT NULL,
-    product_name VARCHAR(255),
-    quantity INT,
-    specification VARCHAR(255),
-    unit VARCHAR(50),
-    unit_price DOUBLE,
-    total_price DOUBLE,
-    notes TEXT,
-    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- 工单表
-CREATE TABLE IF NOT EXISTS engineering_orders (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    engineering_order_id VARCHAR(255) NOT NULL UNIQUE,
-    work_id VARCHAR(255),
-    work_ver INT,
-    work_unique VARCHAR(255) UNIQUE,
-    review_status VARCHAR(50),
-    work_clerk VARCHAR(255),
-    work_audit VARCHAR(255),
-    ke_hu VARCHAR(255),
-    po VARCHAR(255),
-    cheng_pin_ming_cheng VARCHAR(255),
-    chu_yang_shu INT,
-    chao_bi_li INT,
-    bei_zhu TEXT,
-    created_at DATETIME NOT NULL,
-    updated_at DATETIME NOT NULL,
-    INDEX idx_work_unique (work_unique)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- 物料行表
-CREATE TABLE IF NOT EXISTS engineering_order_material_lines (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    engineering_order_id BIGINT NOT NULL,
-    material_name VARCHAR(255),
-    specification VARCHAR(255),
-    quantity INT,
-    unit VARCHAR(50),
-    kai_shi_shi_jian DATETIME,
-    jie_shu_shi_jian DATETIME,
-    dang_qian_jin_du INT,
-    notes TEXT,
-    FOREIGN KEY (engineering_order_id) REFERENCES engineering_orders(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- 文档附件表
-CREATE TABLE IF NOT EXISTS documents (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    file_name VARCHAR(255),
-    file_path VARCHAR(500),
-    file_type VARCHAR(100),
-    file_size BIGINT,
-    category VARCHAR(50),
-    order_id BIGINT,
-    engineering_order_id BIGINT,
-    uploaded_at DATETIME NOT NULL,
-    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
-    FOREIGN KEY (engineering_order_id) REFERENCES engineering_orders(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```bash
+docker-compose up -d
+mvn spring-boot:run
 ```
 
-## MongoDB 初始化
+## 开发环境默认行为
 
-MongoDB 不需要预先创建集合，Spring Data MongoDB 会自动创建。但如果需要创建索引，可以使用以下脚本：
+默认 profile 为 `dev`，见 `src/main/resources/application.yml`。
 
-```javascript
-// 连接到 MongoDB
-use E_Bench_Logs
+`src/main/resources/application-dev.yml` 当前行为：
+- 使用 MySQL 数据源
+- `spring.jpa.hibernate.ddl-auto=update`
+- JDBC URL 启用 `createDatabaseIfNotExist=true`
+- 数据库连接可通过环境变量覆盖：`DB_HOST`、`DB_PORT`、`DB_NAME`、`DB_USERNAME`、`DB_PASSWORD`
 
-// 创建审计日志集合的索引
-db.audit_logs.createIndex({ "orderNumber": 1 })
-db.audit_logs.createIndex({ "userId": 1 })
-db.audit_logs.createIndex({ "entityType": 1, "entityId": 1 })
-db.audit_logs.createIndex({ "time": -1 })
-db.audit_logs.createIndex({ "action": 1 })
+默认值与 `docker-compose.yml` 保持一致：
+- host: `localhost`
+- port: `3306`
+- db: `E_Bench`
+- user: `eprint`
+- password: `eprint123`
 
-// 验证索引
-db.audit_logs.getIndexes()
+## 新空库初始化
+
+适用场景：
+- 新电脑首次拉代码
+- 本地 Docker 卷已清空
+- 本地数据库里还没有业务表
+
+步骤：
+
+```bash
+docker-compose up -d
+mvn spring-boot:run
 ```
 
-## 快速初始化命令
+说明：
+- Spring Boot 会连接 MySQL
+- 如数据库不存在，会因 `createDatabaseIfNotExist=true` 自动创建 `E_Bench`
+- JPA 会根据当前实体创建/更新表结构
+- 核心表包括：`orders`、`engineering_orders`、`engineering_order_material_lines`、`audit_logs`
 
-### MySQL
+## 历史旧库兼容修复
+
+适用场景：
+- 本地数据库沿用过旧版本表结构
+- 启动时报 `Unknown column`
+- 某些列曾手工建成过窄字段，和当前实体不一致
+- 文档脚本和真实实体曾经不同步，导致历史库结构漂移
+
+此时再使用兼容 SQL，而不是把它当成首次启动步骤。
+
+### 兼容脚本
+
+- `init-mysql.sql`：旧库兼容入口脚本
+- `orders_schema_migration.sql`：只针对 `orders` 表的补列/字段修正脚本
+
+执行示例：
+
 ```bash
 mysql -u root -p < init-mysql.sql
 ```
 
-### MongoDB
+或：
+
 ```bash
-mongosh < init-mongo.js
+mysql -u root -p E_Bench < orders_schema_migration.sql
 ```
 
-## 注意事项
+说明：
+- 这些脚本现在只服务于历史库修复
+- 如果目标表不存在，脚本会跳过补丁并提示直接启动应用
+- 对于纯本地开发库，若无保留数据需求，优先考虑直接删库重建
 
-1. Spring Boot 的 `spring.jpa.hibernate.ddl-auto=update` 配置会自动创建和更新表结构
-2. 首次运行时，JPA 会根据实体类自动创建所有表
-3. MongoDB 的索引会在应用启动时自动创建（通过 `@Indexed` 注解）
-4. 确保 MySQL 和 MongoDB 服务都已启动
-5. 确保数据库用户有足够的权限
+## 关于 MongoDB 的说明
+
+当前项目的业务数据和审计日志都落在 MySQL/JPA 上。
+
+例如：
+- `orders`
+- `engineering_orders`
+- `engineering_order_material_lines`
+- `audit_logs`
+
+因此，新同事启动当前后端时，不需要额外准备 MongoDB。
+
+## 健康检查
+
+应用启动后可通过以下接口确认服务正常：
+
+```bash
+curl http://localhost:3000/api/health
+```
+
+## 常见排查
+
+### 1. 应用启动失败，提示连不上 MySQL
+
+先确认：
+
+```bash
+docker-compose ps
+docker-compose logs -f mysql
+```
+
+### 2. 应用启动失败，提示列不存在
+
+说明你连接到的是历史旧库。优先选择：
+1. 本地无保留数据需求时，重建本地库
+2. 需要保留旧数据时，执行 `init-mysql.sql` 或 `orders_schema_migration.sql`
+
+### 3. 文档与实际行为不一致怎么办
+
+以以下文件为准：
+- `README.md`：新机器启动主入口
+- `src/main/resources/application.yml`
+- `src/main/resources/application-dev.yml`
+- 当前 JPA 实体定义
