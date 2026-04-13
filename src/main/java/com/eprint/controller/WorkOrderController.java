@@ -248,7 +248,7 @@ public class WorkOrderController {
      * POST /api/workOrders/updateProgressPur
      */
     @PostMapping("/updateProgressPur")
-    public ResponseEntity<WorkOrderDTO> updateProgressPur(@RequestBody Map<String, Object> request) {
+    public ResponseEntity<?> updateProgressPur(@RequestBody Map<String, Object> request) {
         try {
             String workUnique = (String) request.get("work_unique");
             Integer intermediaID = (Integer) request.get("intermediaID");
@@ -258,7 +258,12 @@ public class WorkOrderController {
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             log.error("Error updating PUR progress", e);
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(Map.of(
+                    "code", "MATERIAL_LINE_UPDATE_FAILED",
+                    "message", e.getMessage() != null ? e.getMessage() : "更新采购进度失败",
+                    "workUnique", request.get("work_unique"),
+                    "intermediaID", request.get("intermediaID")
+            ));
         }
     }
 
