@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -242,7 +243,7 @@ public class WorkOrderService {
                 .orElseThrow(() -> new RuntimeException("Work order not found: " + workUnique));
 
         workOrder.setWorkAudit(workAudit);
-        workOrder.setAuditDate(parseDateTime(auditDate));
+        workOrder.setAuditDate(parseDate(auditDate));
 
         EngineeringOrder savedWorkOrder = engineeringOrderRepository.save(workOrder);
 
@@ -433,10 +434,10 @@ public class WorkOrderService {
 
         MaterialLine materialLine = findMaterialLineByIntermediaID(workOrder, intermediaID);
         if (kaiShiRiQi != null) {
-            materialLine.setKaiShiShiJian(LocalDateTime.parse(kaiShiRiQi));
+            materialLine.setKaiShiShiJian(parseDate(kaiShiRiQi));
         }
         if (yuQiJieShu != null) {
-            materialLine.setJieShuShiJian(LocalDateTime.parse(yuQiJieShu));
+            materialLine.setJieShuShiJian(parseDate(yuQiJieShu));
         }
         materialLine.setDangQianJinDu(dangQianJinDu);
 
@@ -509,18 +510,22 @@ public class WorkOrderService {
         return auditLogRepository.findByEntityTypeAndEntityId("EngineeringOrder", engineeringOrderId);
     }
 
-    private java.time.LocalDateTime parseDateTime(String dateStr) {
-        if (dateStr == null || dateStr.isEmpty()) return null;
+    private LocalDateTime parseDate(String dateStr) {
+        if (dateStr == null || dateStr.isBlank()) return null;
         try {
-            if (dateStr.length() == 10) return java.time.LocalDate.parse(dateStr).atStartOfDay();
-            if (dateStr.contains(" ")) {
-                dateStr = dateStr.replace(" ", "T");
+            String normalized = dateStr.trim();
+            if (normalized.contains(" ")) {
+                normalized = normalized.replace(" ", "T");
             }
-            return java.time.LocalDateTime.parse(dateStr);
+            if (normalized.length() == 10) {
+                return LocalDate.parse(normalized).atStartOfDay();
+            }
+            return LocalDateTime.parse(normalized).toLocalDate().atStartOfDay();
         } catch (Exception e) {
             return null;
         }
     }
+
 
     private MaterialLine findMaterialLineByIntermediaID(EngineeringOrder workOrder, Integer intermediaID) {
         if (intermediaID == null) {

@@ -10,11 +10,16 @@ import com.eprint.entity.Document;
 import com.eprint.entity.AuditLog;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
 public class OrderMapper {
+
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE;
 
     public OrderDTO toDTO(Order order, List<AuditLog> auditLogs) {
         OrderDTO dto = new OrderDTO();
@@ -24,9 +29,9 @@ public class OrderMapper {
         dto.setOrder_unique(order.getOrderUnique());
         dto.setOrderstatus(order.getStatus() != null ? order.getStatus().name() : null);
         dto.setSales(order.getSales());
-        dto.setSalesDate(order.getSalesDate() != null ? order.getSalesDate().toString() : null);
+        dto.setSalesDate(formatDate(order.getSalesDate()));
         dto.setAudit(order.getAudit());
-        dto.setAuditDate(order.getAuditDate() != null ? order.getAuditDate().toString() : null);
+        dto.setAuditDate(formatDate(order.getAuditDate()));
         dto.setCustomer(order.getCustomer());
         dto.setProductName(order.getProductName());
         dto.setCustomerPO(order.getCustomerPO());
@@ -56,9 +61,9 @@ public class OrderMapper {
         dto.setYangPinPingShenXinXi(order.getYangPinPingShenXinXi());
         dto.setDingDanPingShenXinXi(order.getDingDanPingShenXinXi());
 
-        dto.setYeWuRiqi(order.getYeWuRiqi() != null ? order.getYeWuRiqi().toString() : null);
-        dto.setShenHeRiqi(order.getShenHeRiqi() != null ? order.getShenHeRiqi().toString() : null);
-        dto.setDaYinRiqi(order.getDaYinRiqi() != null ? order.getDaYinRiqi().toString() : null);
+        dto.setYeWuRiqi(formatDate(order.getYeWuRiqi()));
+        dto.setShenHeRiqi(formatDate(order.getShenHeRiqi()));
+        dto.setDaYinRiqi(formatDate(order.getDaYinRiqi()));
 
         dto.setDingDanShuLiang(order.getDingDanShuLiang());
         dto.setChuYangShuLiang(order.getChuYangShuLiang());
@@ -83,16 +88,16 @@ public class OrderMapper {
         dto.setKeLaiXinxi(order.getKeLaiXinXi());
 
         // 日期字段映射（实体1/2 → DTO Required/Promise）
-        dto.setXiaZiliaodaiRiqiRequired(order.getXiaZiliaodaiRiqi1() != null ? order.getXiaZiliaodaiRiqi1().toString() : null);
-        dto.setXiaZiliaodaiRiqiPromise(order.getXiaZiliaodaiRiqi2() != null ? order.getXiaZiliaodaiRiqi2().toString() : null);
-        dto.setYinzhangRiqiRequired(order.getYinzhangRiqi1() != null ? order.getYinzhangRiqi1().toString() : null);
-        dto.setYinzhangRiqiPromise(order.getYinzhangRiqi2() != null ? order.getYinzhangRiqi2().toString() : null);
-        dto.setZhepaiRiqiRequired(order.getZhepaiRiqi1() != null ? order.getZhepaiRiqi1().toString() : null);
-        dto.setZhepaiRiqiPromise(order.getZhepaiRiqi2() != null ? order.getZhepaiRiqi2().toString() : null);
-        dto.setChuyangRiqiRequired(order.getChuyangRiqi1() != null ? order.getChuyangRiqi1().toString() : null);
-        dto.setChuyangRiqiPromise(order.getChuyangRiqi2() != null ? order.getChuyangRiqi2().toString() : null);
-        dto.setChuHuoRiqiRequired(order.getJiaoHuoRiQi1() != null ? order.getJiaoHuoRiQi1().toString() : null);
-        dto.setChuHuoRiqiPromise(order.getJiaoHuoRiQi2() != null ? order.getJiaoHuoRiQi2().toString() : null);
+        dto.setXiaZiliaodaiRiqiRequired(formatDate(order.getXiaZiliaodaiRiqi1()));
+        dto.setXiaZiliaodaiRiqiPromise(formatDate(order.getXiaZiliaodaiRiqi2()));
+        dto.setYinzhangRiqiRequired(formatDate(order.getYinzhangRiqi1()));
+        dto.setYinzhangRiqiPromise(formatDate(order.getYinzhangRiqi2()));
+        dto.setZhepaiRiqiRequired(formatDate(order.getZhepaiRiqi1()));
+        dto.setZhepaiRiqiPromise(formatDate(order.getZhepaiRiqi2()));
+        dto.setChuyangRiqiRequired(formatDate(order.getChuyangRiqi1()));
+        dto.setChuyangRiqiPromise(formatDate(order.getChuyangRiqi2()));
+        dto.setChuHuoRiqiRequired(formatDate(order.getJiaoHuoRiQi1()));
+        dto.setChuHuoRiqiPromise(formatDate(order.getJiaoHuoRiQi2()));
 
         dto.setYongTu(order.getYongTu());
         dto.setYeWuDaiBiaoFenJi(order.getYeWuDaiBiaoFenJi());
@@ -128,9 +133,9 @@ public class OrderMapper {
         }
 
         order.setSales(dto.getSales());
-        order.setSalesDate(parseDateTime(dto.getSalesDate()));
+        order.setSalesDate(parseDate(dto.getSalesDate()));
         order.setAudit(dto.getAudit());
-        order.setAuditDate(parseDateTime(dto.getAuditDate()));
+        order.setAuditDate(parseDate(dto.getAuditDate()));
         order.setCustomer(dto.getCustomer());
         order.setProductName(dto.getProductName());
         order.setCustomerPO(dto.getCustomerPO());
@@ -170,9 +175,9 @@ public class OrderMapper {
         order.setYangPinPingShenXinXi(dto.getYangPinPingShenXinXi());
         order.setDingDanPingShenXinXi(dto.getDingDanPingShenXinXi());
 
-        order.setYeWuRiqi(parseDateTime(dto.getYeWuRiqi()));
-        order.setShenHeRiqi(parseDateTime(dto.getShenHeRiqi()));
-        order.setDaYinRiqi(parseDateTime(dto.getDaYinRiqi()));
+        order.setYeWuRiqi(parseDate(dto.getYeWuRiqi()));
+        order.setShenHeRiqi(parseDate(dto.getShenHeRiqi()));
+        order.setDaYinRiqi(parseDate(dto.getDaYinRiqi()));
 
         order.setGuigeGaoMm(dto.getGuigeGaoMm());
         order.setGuigeKuanMm(dto.getGuigeKuanMm());
@@ -189,16 +194,16 @@ public class OrderMapper {
         order.setYongTu(dto.getYongTu());
 
         // 日期字段：前端使用 Required/Promise 命名，后端实体使用 1/2 命名
-        order.setXiaZiliaodaiRiqi1(parseDateTime(dto.getXiaZiliaodaiRiqiRequired()));
-        order.setXiaZiliaodaiRiqi2(parseDateTime(dto.getXiaZiliaodaiRiqiPromise()));
-        order.setYinzhangRiqi1(parseDateTime(dto.getYinzhangRiqiRequired()));
-        order.setYinzhangRiqi2(parseDateTime(dto.getYinzhangRiqiPromise()));
-        order.setZhepaiRiqi1(parseDateTime(dto.getZhepaiRiqiRequired()));
-        order.setZhepaiRiqi2(parseDateTime(dto.getZhepaiRiqiPromise()));
-        order.setChuyangRiqi1(parseDateTime(dto.getChuyangRiqiRequired()));
-        order.setChuyangRiqi2(parseDateTime(dto.getChuyangRiqiPromise()));
-        order.setJiaoHuoRiQi1(parseDateTime(dto.getChuHuoRiqiRequired()));
-        order.setJiaoHuoRiQi2(parseDateTime(dto.getChuHuoRiqiPromise()));
+        order.setXiaZiliaodaiRiqi1(parseDate(dto.getXiaZiliaodaiRiqiRequired()));
+        order.setXiaZiliaodaiRiqi2(parseDate(dto.getXiaZiliaodaiRiqiPromise()));
+        order.setYinzhangRiqi1(parseDate(dto.getYinzhangRiqiRequired()));
+        order.setYinzhangRiqi2(parseDate(dto.getYinzhangRiqiPromise()));
+        order.setZhepaiRiqi1(parseDate(dto.getZhepaiRiqiRequired()));
+        order.setZhepaiRiqi2(parseDate(dto.getZhepaiRiqiPromise()));
+        order.setChuyangRiqi1(parseDate(dto.getChuyangRiqiRequired()));
+        order.setChuyangRiqi2(parseDate(dto.getChuyangRiqiPromise()));
+        order.setJiaoHuoRiQi1(parseDate(dto.getChuHuoRiqiRequired()));
+        order.setJiaoHuoRiQi2(parseDate(dto.getChuHuoRiqiPromise()));
 
         order.setYeWuDaiBiaoFenJi(dto.getYeWuDaiBiaoFenJi());
         order.setShenHeRen(dto.getShenHeRen());
@@ -279,16 +284,23 @@ public class OrderMapper {
         return dto;
     }
 
-    private java.time.LocalDateTime parseDateTime(String dateStr) {
-        if (dateStr == null || dateStr.isEmpty()) return null;
+    private String formatDate(LocalDateTime date) {
+        return date != null ? date.toLocalDate().format(DATE_FORMATTER) : null;
+    }
+
+    private LocalDateTime parseDate(String dateStr) {
+        if (dateStr == null || dateStr.isBlank()) {
+            return null;
+        }
         try {
-            // 处理 YYYY-MM-DD
-            if (dateStr.length() == 10) return java.time.LocalDate.parse(dateStr).atStartOfDay();
-            // 处理 YYYY-MM-DD HH:mm:ss (将空格替换为 T 以符合 ISO 格式)
-            if (dateStr.contains(" ")) {
-                dateStr = dateStr.replace(" ", "T");
+            String normalized = dateStr.trim();
+            if (normalized.contains(" ")) {
+                normalized = normalized.replace(" ", "T");
             }
-            return java.time.LocalDateTime.parse(dateStr);
+            if (normalized.length() == 10) {
+                return LocalDate.parse(normalized, DATE_FORMATTER).atStartOfDay();
+            }
+            return LocalDateTime.parse(normalized).toLocalDate().atStartOfDay();
         } catch (Exception e) {
             return null;
         }

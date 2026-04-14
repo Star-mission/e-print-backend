@@ -10,11 +10,16 @@ import com.eprint.entity.Document;
 import com.eprint.entity.AuditLog;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
 public class WorkOrderMapper {
+
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE;
 
     public WorkOrderDTO toDTO(EngineeringOrder workOrder, List<AuditLog> auditLogs) {
         WorkOrderDTO dto = new WorkOrderDTO();
@@ -24,9 +29,9 @@ public class WorkOrderMapper {
         dto.setWork_unique(workOrder.getWorkUnique());
         dto.setWorkorderstatus(workOrder.getReviewStatus() != null ? workOrder.getReviewStatus().name() : null);
         dto.setWork_clerk(workOrder.getWorkClerk());
-        dto.setClerkDate(workOrder.getClerkDate() != null ? workOrder.getClerkDate().toString() : null);
+        dto.setClerkDate(formatDate(workOrder.getClerkDate()));
         dto.setWork_audit(workOrder.getWorkAudit());
-        dto.setAuditDate(workOrder.getAuditDate() != null ? workOrder.getAuditDate().toString() : null);
+        dto.setAuditDate(formatDate(workOrder.getAuditDate()));
         dto.setCustomer(workOrder.getKeHu());
         dto.setCustomerPO(workOrder.getPo());
         dto.setProductName(workOrder.getChengPinMingCheng());
@@ -34,18 +39,18 @@ public class WorkOrderMapper {
         dto.setGongDanLeiXing(workOrder.getGongDanLeiXing());
         dto.setCaiLiao(workOrder.getCaiLiao());
         dto.setChanPinLeiXing(workOrder.getChanPinLeiXing());
-        dto.setZhiDanShiJian(workOrder.getZhiDanShiJian() != null ? workOrder.getZhiDanShiJian().toString() : null);
+        dto.setZhiDanShiJian(formatDate(workOrder.getZhiDanShiJian()));
 
         dto.setDingDanShuLiang(workOrder.getDingDanShuLiang());
         dto.setChuYangShuLiang(workOrder.getChuYangShu());
         dto.setChaoBiLiShuLiang(workOrder.getChaoBiLi());
         dto.setBenChangFangSun(workOrder.getBenChangFangSun());
-        dto.setChuYangRiqiRequired(workOrder.getChuYangRiqiRequired() != null ? workOrder.getChuYangRiqiRequired().toString() : null);
-        dto.setChuHuoRiqiRequired(workOrder.getChuHuoRiqiRequired() != null ? workOrder.getChuHuoRiqiRequired().toString() : null);
+        dto.setChuYangRiqiRequired(formatDate(workOrder.getChuYangRiqiRequired()));
+        dto.setChuHuoRiqiRequired(formatDate(workOrder.getChuHuoRiqiRequired()));
 
         dto.setZhuangDingJianShu(workOrder.getZhuangDingJianShu());
-        dto.setZhuangDingStart(workOrder.getZhuangDingStart() != null ? workOrder.getZhuangDingStart().toString() : null);
-        dto.setZhuangDingEnd(workOrder.getZhuangDingEnd() != null ? workOrder.getZhuangDingEnd().toString() : null);
+        dto.setZhuangDingStart(formatDate(workOrder.getZhuangDingStart()));
+        dto.setZhuangDingEnd(formatDate(workOrder.getZhuangDingEnd()));
         dto.setHead_MNF(workOrder.getHeadMNF());
         dto.setBeiZhu(workOrder.getBeiZhu());
 
@@ -81,9 +86,9 @@ public class WorkOrderMapper {
         }
 
         workOrder.setWorkClerk(dto.getWork_clerk());
-        workOrder.setClerkDate(parseDateTime(dto.getClerkDate()));
+        workOrder.setClerkDate(parseDate(dto.getClerkDate()));
         workOrder.setWorkAudit(dto.getWork_audit());
-        workOrder.setAuditDate(parseDateTime(dto.getAuditDate()));
+        workOrder.setAuditDate(parseDate(dto.getAuditDate()));
         workOrder.setKeHu(dto.getCustomer());
         workOrder.setPo(dto.getCustomerPO());
         workOrder.setChengPinMingCheng(dto.getProductName());
@@ -91,18 +96,18 @@ public class WorkOrderMapper {
         workOrder.setGongDanLeiXing(dto.getGongDanLeiXing());
         workOrder.setCaiLiao(dto.getCaiLiao());
         workOrder.setChanPinLeiXing(dto.getChanPinLeiXing());
-        workOrder.setZhiDanShiJian(parseDateTime(dto.getZhiDanShiJian()));
+        workOrder.setZhiDanShiJian(parseDate(dto.getZhiDanShiJian()));
 
         workOrder.setDingDanShuLiang(dto.getDingDanShuLiang());
         workOrder.setChuYangShu(dto.getChuYangShuLiang());
         workOrder.setChaoBiLi(dto.getChaoBiLiShuLiang());
         workOrder.setBenChangFangSun(dto.getBenChangFangSun());
-        workOrder.setChuYangRiqiRequired(parseDateTime(dto.getChuYangRiqiRequired()));
-        workOrder.setChuHuoRiqiRequired(parseDateTime(dto.getChuHuoRiqiRequired()));
+        workOrder.setChuYangRiqiRequired(parseDate(dto.getChuYangRiqiRequired()));
+        workOrder.setChuHuoRiqiRequired(parseDate(dto.getChuHuoRiqiRequired()));
 
         workOrder.setZhuangDingJianShu(dto.getZhuangDingJianShu());
-        workOrder.setZhuangDingStart(parseDateTime(dto.getZhuangDingStart()));
-        workOrder.setZhuangDingEnd(parseDateTime(dto.getZhuangDingEnd()));
+        workOrder.setZhuangDingStart(parseDate(dto.getZhuangDingStart()));
+        workOrder.setZhuangDingEnd(parseDate(dto.getZhuangDingEnd()));
         workOrder.setHeadMNF(dto.getHead_MNF());
         workOrder.setBeiZhu(dto.getBeiZhu());
 
@@ -138,8 +143,8 @@ public class WorkOrderMapper {
         dto.setYiGouJianShu(line.getYiGouJianShu());
         dto.setHead_PUR(line.getHeadPUR());
         dto.setHead_OUT(line.getHeadOUT());
-        dto.setKaiShiRiQi(line.getKaiShiShiJian() != null ? line.getKaiShiShiJian().toString() : null);
-        dto.setYuQiJieShu(line.getJieShuShiJian() != null ? line.getJieShuShiJian().toString() : null);
+        dto.setKaiShiRiQi(formatDate(line.getKaiShiShiJian()));
+        dto.setYuQiJieShu(formatDate(line.getJieShuShiJian()));
         dto.setDangQianJinDu(line.getDangQianJinDu() != null ? Integer.parseInt(line.getDangQianJinDu()) : null);
         dto.setNotes(line.getNotes());
         return dto;
@@ -168,11 +173,8 @@ public class WorkOrderMapper {
         line.setHeadPUR(dto.getHead_PUR());
         line.setHeadOUT(dto.getHead_OUT());
 
-        // 安全解析日期字符串，处理空字符串情况
-        line.setKaiShiShiJian(dto.getKaiShiRiQi() != null && !dto.getKaiShiRiQi().isEmpty()
-            ? java.time.LocalDateTime.parse(dto.getKaiShiRiQi()) : null);
-        line.setJieShuShiJian(dto.getYuQiJieShu() != null && !dto.getYuQiJieShu().isEmpty()
-            ? java.time.LocalDateTime.parse(dto.getYuQiJieShu()) : null);
+        line.setKaiShiShiJian(parseDate(dto.getKaiShiRiQi()));
+        line.setJieShuShiJian(parseDate(dto.getYuQiJieShu()));
 
         line.setDangQianJinDu(dto.getDangQianJinDu() != null ? dto.getDangQianJinDu().toString() : null);
         line.setNotes(dto.getNotes());
@@ -189,14 +191,38 @@ public class WorkOrderMapper {
         return dto;
     }
 
-    private java.time.LocalDateTime parseDateTime(String dateStr) {
-        if (dateStr == null || dateStr.isEmpty()) return null;
+    private String formatDate(LocalDateTime date) {
+        return date != null ? date.toLocalDate().format(DATE_FORMATTER) : null;
+    }
+
+    private LocalDateTime parseDate(String dateStr) {
+        if (dateStr == null || dateStr.isBlank()) {
+            return null;
+        }
         try {
-            if (dateStr.length() == 10) return java.time.LocalDate.parse(dateStr).atStartOfDay();
-            if (dateStr.contains(" ")) {
-                dateStr = dateStr.replace(" ", "T");
+            String normalized = dateStr.trim();
+            if (normalized.contains(" ")) {
+                normalized = normalized.replace(" ", "T");
             }
-            return java.time.LocalDateTime.parse(dateStr);
+            if (normalized.length() == 10) {
+                return LocalDate.parse(normalized, DATE_FORMATTER).atStartOfDay();
+            }
+            return LocalDateTime.parse(normalized).toLocalDate().atStartOfDay();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private LocalDateTime parseDateTime(String dateStr) {
+        if (dateStr == null || dateStr.isBlank()) {
+            return null;
+        }
+        try {
+            String normalized = dateStr.trim();
+            if (normalized.contains(" ")) {
+                normalized = normalized.replace(" ", "T");
+            }
+            return LocalDateTime.parse(normalized);
         } catch (Exception e) {
             return null;
         }

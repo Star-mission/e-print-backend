@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -427,8 +428,8 @@ public class OrderService {
 
         // 更新审核日期（如果提供）
         if (auditDate != null && !auditDate.isEmpty()) {
-            // 这里可以根据需要解析日期字符串并设置
-            log.info("审核日期: {}", auditDate);
+            order.setAuditDate(parseDate(auditDate));
+            log.info("更新审核日期为: {}", auditDate);
         }
 
         // 保存到数据库
@@ -516,6 +517,24 @@ public class OrderService {
      */
     private List<AuditLog> getAuditLogs(String orderNumber) {
         return auditLogRepository.findByOrderNumber(orderNumber);
+    }
+
+    private LocalDateTime parseDate(String dateStr) {
+        if (dateStr == null || dateStr.isBlank()) {
+            return null;
+        }
+        try {
+            String normalized = dateStr.trim();
+            if (normalized.contains(" ")) {
+                normalized = normalized.replace(" ", "T");
+            }
+            if (normalized.length() == 10) {
+                return LocalDate.parse(normalized).atStartOfDay();
+            }
+            return LocalDateTime.parse(normalized).toLocalDate().atStartOfDay();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /**
