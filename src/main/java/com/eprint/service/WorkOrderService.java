@@ -426,7 +426,7 @@ public class WorkOrderService {
      */
     @Transactional
     public WorkOrderDTO updateProgressOut(String workUnique, Integer intermediaID,
-                                         String kaiShiRiQi, String yuQiJieShu, String dangQianJinDu) {
+                                         String kaiShiRiQi, String yuQiJieShu, Integer dangQianJinDu) {
         log.info("Updating OUT progress for work order: {} intermediaID: {}", workUnique, intermediaID);
 
         EngineeringOrder workOrder = engineeringOrderRepository.findByWorkUnique(workUnique)
@@ -439,7 +439,7 @@ public class WorkOrderService {
         if (yuQiJieShu != null) {
             materialLine.setJieShuShiJian(parseDate(yuQiJieShu));
         }
-        materialLine.setDangQianJinDu(dangQianJinDu);
+        materialLine.setDangQianJinDu(dangQianJinDu != null ? dangQianJinDu.toString() : null);
 
         EngineeringOrder savedWorkOrder = engineeringOrderRepository.save(workOrder);
 
@@ -449,7 +449,7 @@ public class WorkOrderService {
                 "EngineeringOrder",
                 savedWorkOrder.getEngineeringOrderId(),
                 null,
-                dangQianJinDu
+                dangQianJinDu != null ? dangQianJinDu.toString() : null
         );
 
         return workOrderMapper.toDTO(savedWorkOrder, getAuditLogs(savedWorkOrder.getEngineeringOrderId()));

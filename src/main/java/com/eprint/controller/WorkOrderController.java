@@ -278,7 +278,15 @@ public class WorkOrderController {
             Integer intermediaID = (Integer) request.get("intermediaID");
             String kaiShiRiQi = (String) request.get("kaiShiRiQi");
             String yuQiJieShu = (String) request.get("yuQiJieShu");
-            String dangQianJinDu = (String) request.get("dangQianJinDu");
+            Object dangQianJinDuValue = request.get("dangQianJinDu");
+            Integer dangQianJinDu = null;
+
+            if (dangQianJinDuValue != null) {
+                if (!(dangQianJinDuValue instanceof Number number)) {
+                    throw new IllegalArgumentException("dangQianJinDu must be a number or null");
+                }
+                dangQianJinDu = number.intValue();
+            }
 
             WorkOrderDTO result = workOrderService.updateProgressOut(
                     workUnique, intermediaID, kaiShiRiQi, yuQiJieShu, dangQianJinDu);
